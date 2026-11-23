@@ -1,0 +1,4 @@
+name: fs_edit
+label: 修改文件文本
+description: 精确替换工作区内文件的一段文本（old_text 必须精确匹配，多处命中仅替换第一处并在结果中提示），返回结构化 JSON。推荐先 fs_read 确认再编辑。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

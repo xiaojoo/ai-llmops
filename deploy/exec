@@ -1,0 +1,26 @@
+docker build -t llmops-api:0.1.0 .
+
+export DOCKER_BUILDKIT=1
+docker build -t llmops-web:0.1.0 .
+
+docker build --network=host -t llmops-web .
+
+DOCKER_BUILDKIT=1 docker build -t llmops-web:0.1.0 .
+
+docker compose up llmops-db -d --build
+
+docker compose up llmops-web -d --build
+
+docker compose up llmops-api llmops-celery -d --build
+
+docker compose up -d --build
+
+docker compose ps
+
+docker compose logs -f llmops-web
+
+docker compose down -v
+
+docker compose up -d --build --no-pull
+
+docker network ls

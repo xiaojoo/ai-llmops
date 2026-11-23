@@ -1,0 +1,4 @@
+name: fs_delete
+label: 删除文件/目录
+description: 删除工作区内的文件或目录（高危操作：删除统一移入回收站 .agent-trash/，可恢复；非空目录须设 recursive=true；禁止删除工作区根目录），返回结构化 JSON。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

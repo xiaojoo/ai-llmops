@@ -1,0 +1,258 @@
+/* AgentChat 嵌入入口样式（登录界面 + 主内容区） */
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.embed-root {
+  width: 100%;
+  height: 100%;
+  background: #18191a;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 登录界面 ===== */
+.embed-login {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 24px;
+  background: #18191a;
+}
+
+.embed-login__title {
+  font-size: 15px;
+  color: #d0d0d0;
+  margin-bottom: 8px;
+}
+
+.embed-login__input {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 260px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1d1e20;
+  color: #d0d0d0;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.embed-login__input::placeholder {
+  color: #666666;
+}
+
+.embed-login__input:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.embed-login__btn {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 260px;
+  height: 32px;
+  margin-top: 4px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.embed-login__btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.embed-login__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.embed-login__error {
+  width: 100%;
+  max-width: 260px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #e05656;
+  word-break: break-word;
+}
+
+/* 隐藏的文件选择器（加号触发上传） */
+.embed-file-input {
+  display: none;
+}
+
+/* 切换 App / 加载会话：居中加载遮罩（顶部留出头部栏） */
+.switching-overlay {
+  position: fixed;
+  inset: 40px 0 0 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(24, 25, 26, 0.65);
+}
+
+.switching-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #60a5fa;
+  animation: switching-rotate 0.8s linear infinite;
+}
+
+.switching-text {
+  font-size: 12px;
+  color: #9aa3b2;
+}
+
+@keyframes switching-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 语音操作失败提示（底部轻量条，自动消失） */
+.voice-hint {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  max-width: 80%;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #2a1215;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fca5a5;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+}
+
+/* 服务连接失败弹窗（深色主题） */
+.conn-dialog-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conn-dialog {
+  width: min(360px, calc(100vw - 40px));
+  background: #1d1e20;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conn-dialog__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fca5a5;
+}
+
+.conn-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conn-dialog__hint {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #c8c8c8;
+}
+
+.conn-dialog__detail {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #8a93a3;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.conn-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.conn-dialog__btn {
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 12.5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.conn-dialog__btn:hover:not(:disabled) {
+  background: #2a2d31;
+}
+
+.conn-dialog__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.conn-dialog__btn--primary {
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.conn-dialog__btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}

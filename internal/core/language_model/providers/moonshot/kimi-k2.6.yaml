@@ -1,0 +1,22 @@
+model: kimi-k2.6
+label: kimi-k2.6
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 262144
+max_output_tokens: 262144
+attributes:
+  model: kimi-k2.6
+parameters:
+  - name: max_tokens
+    use_template: max_tokens
+    default: 8192
+    max: 262144
+metadata:
+  pricing:
+    input: 0.0040
+    output: 0.0160
+    unit: 0.001
+    currency: RMB

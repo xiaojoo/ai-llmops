@@ -1,0 +1,35 @@
+- name: time
+  label: 时间
+  description: 一个用于获取当前时间的工具
+  icon: icon.svg
+  background: "#E5E7EB"
+  category: tool
+  created_at: 17722498387
+- name: gaode
+  label: 高德工具包
+  description: 内置了高德天气预报和ip查询功能
+  icon: icon.svg
+  background: "#E5E7EB"
+  category: tool
+  created_at: 17722498387
+- name: pptx
+  label: PPT工具包
+  description: 这是一个PPT处理工具包，支持内置模板生成与基础渲染两种方式，可将特定内容生成PPT文档。
+  icon: icon.svg
+  background: "#FFFFFF"
+  category: tool
+  created_at: 1722498386
+- name: filesystem
+  label: 文件系统工具包
+  description: 受控文件系统工具包：10 个工具（列出/查看/读取/写入/编辑/建目录/复制/移动/删除/搜索）访问工作区文件。内置路径沙箱、符号链接防护、权限与大小限制、审计日志；删除统一进回收站可恢复。所有操作严格限制在工作区根目录（FILESYSTEM_WORKSPACE）内。
+  icon: icon.svg
+  background: "#F0FDF4"
+  category: tool
+  created_at: 1742515200
+- name: browser
+  label: 浏览器控制工具包
+  description: 基于 browser 实现的网页自动化工具，让 Agent 能用自然语言操控浏览器，支持网页浏览、点击、填表、截图、数据提取等操作。
+  icon: icon.svg
+  background: "#EFF6FF"
+  category: tool
+  created_at: 1742515200

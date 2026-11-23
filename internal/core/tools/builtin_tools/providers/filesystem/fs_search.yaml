@@ -1,0 +1,4 @@
+name: fs_search
+label: 搜索文件
+description: 在工作区内按 glob 通配符模式搜索文件（pattern 不含 / 按文件名匹配任意深度，含 / 按相对路径匹配；默认跳过隐藏目录与回收站/审计目录），返回结构化 JSON。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

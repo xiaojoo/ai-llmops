@@ -1,0 +1,123 @@
+/* ============================================================
+   AgentChat — 基础样式
+   深色主题、极简专业、低对比度（VS Code / Cursor 风格）
+   ============================================================ */
+
+.agent-chat {
+  /* 设计令牌注入 */
+  --bg-primary: #18191a;
+  --bg-secondary: #1d1e20;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-active: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-chip: rgba(255, 255, 255, 0.08);
+  --text-primary: #d0d0d0;
+  --text-secondary: #8a8a8a;
+  --text-muted: #666666;
+  --text-icon: #8b949e;
+  --radius-input: 8px;
+  --radius-item: 6px;
+  --radius-chip: 4px;
+
+  /* 布局 */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+.agent-chat *,
+.agent-chat *::before,
+.agent-chat *::after {
+  box-sizing: border-box;
+}
+
+/* 禁止页面滚动，列表内部滚动 */
+.agent-chat body,
+.agent-chat html {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* 细滚动条（无上下箭头）：仅用 ::-webkit-scrollbar 自定义规则。
+   不要加标准属性 scrollbar-width/scrollbar-color——Chromium 检测到标准属性时会
+   改用原生滚动条（带箭头、更粗）并忽略 webkit 规则（实测：两者并存时宽度 10px
+   原生 thin 而非 6px 自定义）。 */
+.agent-chat ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.agent-chat ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.agent-chat ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+}
+
+.agent-chat ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.agent-chat ::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.agent-chat ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 统一按钮 reset */
+.agent-chat button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 图标默认色 */
+.agent-chat .ac-icon {
+  color: var(--text-icon);
+  transition: color 0.15s ease;
+}
+
+/* Arco 图标尺寸：embed 未加载 Arco 组件 CSS（.arco-icon 的 width/height:1em 缺失），
+   SVG 只有 font-size（由 :size 注入）没有宽高，浏览器按默认尺寸渲染导致不显示/异常。
+   这里显式按 1em 缩放，使图标大小等于 size 值（如 size=14 → 14px）。 */
+.agent-chat .arco-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.agent-chat button:hover .ac-icon {
+  color: #d0d0d0;
+}
+
+.agent-chat button:active {
+  background: var(--bg-active);
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- WebApp 会话：聊天气泡 + 三点 -->
+  <path fill="#6C707E" d="M8 1.5C4.13 1.5 1 4.1 1 7.29c0 1.55.69 2.95 1.8 4.02-.09.82-.5 1.72-1.18 2.63 2.26-.3 3.91-1.07 5.01-1.95.44.05.9.08 1.37.08 3.87 0 7-2.6 7-5.78S11.87 1.5 8 1.5z"/>
+  <circle fill="#FFFFFF" cx="4.6" cy="7.3" r=".95"/>
+  <circle fill="#FFFFFF" cx="8" cy="7.3" r=".95"/>
+  <circle fill="#FFFFFF" cx="11.4" cy="7.3" r=".95"/>
+</svg>

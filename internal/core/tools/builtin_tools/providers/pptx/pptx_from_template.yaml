@@ -1,0 +1,4 @@
+name: pptx_from_template
+label: 模板生成PPT
+description: 使用内置设计模板将Markdown内容生成精美的PowerPoint演示文稿，保留模板排版与配色，只替换文字，返回可下载的 .pptx 文件链接。
+params: [ ]

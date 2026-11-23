@@ -1,0 +1,89 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "llmops-web"
+        IMAGE_TAG = "0.0.1"
+        DOCKER_REGISTRY = "crpi-jnk3ch80my2cet7k.cn-shenzhen.personal.cr.aliyuncs.com"
+        DEPLOY_COMPOSE_FILE = "./docker/docker-compose.yaml"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Checking out source code..."
+                checkout scm
+            }
+        }
+
+        stage('Get Version from package.json') {
+            steps {
+                script {
+                    IMAGE_TAG = sh(
+                        script: "node -p \"require('./package.json').version\"",
+                        returnStdout: true
+                    ).trim()
+                    echo "Detected image version: ${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'aliyuncs-docker-registry',
+                                                     usernameVariable: 'USERNAME',
+                                                     passwordVariable: 'PASSWORD')]) {
+                        echo "Logging in to Alibaba Cloud ACR..."
+                        sh "docker login -u $USERNAME -p $PASSWORD ${env.DOCKER_REGISTRY}"
+
+                        echo "Tag and push image..."
+                        sh """
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${env.DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push ${env.DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image (Optional)') {
+            when {
+                expression { env.DOCKER_REGISTRY != "" }
+            }
+            steps {
+                script {
+                    echo "Tagging and pushing to registry ${DOCKER_REGISTRY}..."
+                    sh """
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy via Docker Compose') {
+            steps {
+                script {
+                    echo "Deploying container using docker-compose with updated image..."
+                    // 使用环境变量覆盖 compose 文件中的 image
+                    sh """
+                        # 停止旧容器
+                        docker-compose -f ${DEPLOY_COMPOSE_FILE} down
+                        # 使用最新镜像启动服务
+                        IMAGE_TAG=${IMAGE_TAG} docker-compose -f ${DEPLOY_COMPOSE_FILE} up -d --build
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "CI/CD pipeline finished successfully!"
+        }
+        failure {
+            echo "CI/CD pipeline failed!"
+        }
+    }
+}

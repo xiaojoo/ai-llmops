@@ -1,0 +1,116 @@
+{
+  "name": "webapp-chat",
+  "displayName": "WebApp Chat",
+  "description": "Embed the WebApp AI session window in VS Code (port of the IDEA webapp-session-window plugin)",
+  "version": "0.1.0",
+  "publisher": "webapp",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "webapp",
+          "title": "WebApp",
+          "icon": "media/webapp.svg"
+        }
+      ]
+    },
+    "views": {
+      "webapp": [
+        {
+          "type": "webview",
+          "id": "webappSession",
+          "name": ""
+        }
+      ]
+    },
+    "configuration": {
+      "title": "WebApp Chat",
+      "properties": {
+        "webapp-chat.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:5000",
+          "markdownDescription": "WebApp 后端 API 基地址（FastAPI，含端口）。对应 IDEA 插件设置里的 backendUrl。"
+        },
+        "webapp-chat.defaultWebAppToken": {
+          "type": "string",
+          "default": "M0GEcQmJvGMCN5ou",
+          "markdownDescription": "默认 WebApp 标识 token（`/web_apps/{token}` 路径中的标识）。登录后可在界面里通过 App 下拉切换。"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "webapp-chat.focus",
+        "title": "WebApp: 打开会话窗口",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "webapp-chat.moveToSecondarySideBar",
+        "title": "WebApp: 移到右侧边栏"
+      },
+      {
+        "command": "webapp-chat.codeAction.optimize",
+        "title": "WebApp AI: 优化选中代码"
+      },
+      {
+        "command": "webapp-chat.codeAction.explain",
+        "title": "WebApp AI: 解释选中代码"
+      },
+      {
+        "command": "webapp-chat.codeAction.comment",
+        "title": "WebApp AI: 注释选中代码"
+      },
+      {
+        "command": "webapp-chat.codeAction.custom",
+        "title": "WebApp AI: 选中内容填入输入框"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "webapp-chat.codeAction.optimize",
+          "when": "editorHasSelection",
+          "group": "webapp-ai@1"
+        },
+        {
+          "command": "webapp-chat.codeAction.explain",
+          "when": "editorHasSelection",
+          "group": "webapp-ai@2"
+        },
+        {
+          "command": "webapp-chat.codeAction.comment",
+          "when": "editorHasSelection",
+          "group": "webapp-ai@3"
+        },
+        {
+          "command": "webapp-chat.codeAction.custom",
+          "when": "editorHasSelection",
+          "group": "webapp-ai@4"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build:webview": "node scripts/build-webview.js",
+    "compile": "npm run build:webview && tsc -p tsconfig.json",
+    "watch": "npm run build:webview && tsc -p tsconfig.json --watch",
+    "test": "tsc -p tsconfig.test.json && node --test --test-isolation=none dist-test/tests/sse.test.js dist-test/tests/client.test.js dist-test/tests/bridge.test.js dist-test/tests/localTools.test.js",
+    "package": "npm run compile && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.9.2",
+    "typescript": "^5.7.0"
+  }
+}

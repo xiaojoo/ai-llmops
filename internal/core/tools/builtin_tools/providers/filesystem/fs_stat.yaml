@@ -1,0 +1,4 @@
+name: fs_stat
+label: 查看文件信息
+description: 查看工作区内文件/目录的详细信息（类型/大小/修改时间/创建时间/权限，符号链接返回 target），返回结构化 JSON。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

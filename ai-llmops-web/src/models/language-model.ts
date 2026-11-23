@@ -1,0 +1,66 @@
+// 获取所有语言模型列表响应结构
+import type { BaseResponse } from '@/models/base.ts'
+
+export type GetLanguageModelsResponse = BaseResponse<
+  {
+    name: string
+    position: number
+    label: string
+    icon: string
+    description: string
+    background: string
+    support_model_types: string[]
+    models: {
+      model: string
+      label: string
+      model_type: string
+      features: string[]
+      context_windows: number
+      max_output_tokens: number
+      attributes: Record<string, unknown>
+      metadata: Record<string, unknown>
+      parameters: {
+        name: string
+        label: string
+        type: string
+        help: string
+        required: boolean
+        default: unknown
+        min: number
+        max: number
+        precision: number
+        options: {
+          label: string
+          value: unknown
+        }[]
+      }[]
+    }[]
+  }[]
+>
+
+// 获取指定语言模型详情响应结构
+export type GetLanguageModelResponse = BaseResponse<{
+  model: string
+  label: string
+  model_type: string
+  features: string[]
+  context_windows: number
+  max_output_tokens: number
+  attributes: Record<string, unknown>
+  metadata: Record<string, unknown>
+  parameters: {
+    name: string
+    label: string
+    type: string
+    help: string
+    required: boolean
+    default: unknown
+    min: number
+    max: number
+    precision: number
+    options: {
+      label: string
+      value: unknown
+    }[]
+  }[]
+}>

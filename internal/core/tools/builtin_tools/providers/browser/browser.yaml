@@ -1,0 +1,4 @@
+name: browser
+label: 浏览器自动化任务
+description: 用自然语言描述任务，让 AI 自动操控浏览器完成网页操作，如搜索信息、填写表单、提取数据、点击按钮等。
+params: []

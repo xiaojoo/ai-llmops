@@ -1,0 +1,5 @@
+# 部署相关文件统一 LF，防止 Windows 检出（core.autocrlf=true）转成 CRLF 后，
+# Linux 端 source .env / 执行脚本时报 $'\r' / Bad substitution 之类的错。
+*.sh text eol=lf
+*.env.example text eol=lf
+deploy.env text eol=lf

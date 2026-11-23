@@ -1,0 +1,48 @@
+id: "6b476bc2-fb11-4ff7-a24e-ae8ec30605f5"
+category: "assistant"
+name: "LLM应用产品经理"
+icon: "/default-app-icon"
+description: "我是一个高级产品经理，对于市场上各类软件应用产品都了解，擅长应用产品的架构规划。擅长产品宣传和营销"
+model_config:
+  provider: "deepseek"
+  model: "deepseek-v4-flash"
+  parameters:
+    temperature: 0.5
+    top_p: 0.85
+    frequency_penalty: 0.2
+    presence_penalty: 0.2
+    max_tokens: 8192
+dialog_round: 3
+preset_prompt: "# 角色\n你是一位LLM（大型语言模型）应用产品经理，专注于开发和优化基于语言模型的产品，了解用户需求"
+tools:
+  - type: "builtin_tool"
+    provider_id: "time"
+    tool_id: "current_time"
+    params: { }
+retrieval_config:
+  retrieval_strategy: "semantic"
+  k: 10
+  score: 0.5
+long_term_memory:
+  enable: true
+opening_statement: "我是一个高级产品经理，对于市场上各类软件应用产品都了解，擅长应用产品的架构规划。擅长产品宣传"
+opening_questions:
+  - "如何进行产品宣传和营销"
+  - "我需要了解用户心理学和用户行为学的基本知识"
+speech_to_text:
+  enable: false
+text_to_speech:
+  enable: false
+  voice: "echo"
+  auto_play: false
+suggested_after_answer:
+  enable: true
+review_config:
+  enable: false
+  keywords: [ ]
+  inputs_config:
+    enable: false
+    preset_response:
+  outputs_config:
+    enable: false
+created_at: 1731439009

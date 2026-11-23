@@ -1,0 +1,50 @@
+id: "d3296faf-6ad7-4475-ac95-53308496e377"
+category: "assistant"
+name: "旅游助手"
+icon: "/default-app-icon"
+description: "负责回答旅游行程的相关问题和推荐路线"
+model_config:
+  provider: "deepseek"
+  model: "deepseek-v4-flash"
+  parameters:
+    temperature: 0.5
+    top_p: 0.85
+    frequency_penalty: 0.2
+    presence_penalty: 0.2
+    max_tokens: 8192
+dialog_round: 3
+preset_prompt: "# 角色\n你是一位旅游助手，擅长为用户提供旅行建议、行程规划和目的地推荐。你能够根据用户的需求和兴趣"
+tools:
+  - type: "builtin_tool"
+    provider_id: "time"
+    tool_id: "current_time"
+    params: { }
+retrieval_config:
+  retrieval_strategy: "semantic"
+  k: 10
+  score: 0.5
+long_term_memory:
+  enable: true
+opening_statement: "你好，我是携程旅行社的 AI 导游。我可以根据您的需求为您推荐适合的旅游路线。请告诉我您的旅行目的地"
+opening_questions:
+  - "您有几天的行程计划？"
+  - "请问您打算选择什么样的交通方式？"
+  - "您对哪些旅游兴趣点感兴趣？"
+
+speech_to_text:
+  enable: false
+text_to_speech:
+  enable: false
+  voice: "echo"
+  auto_play: false
+suggested_after_answer:
+  enable: true
+review_config:
+  enable: false
+  keywords: [ ]
+  inputs_config:
+    enable: false
+    preset_response:
+  outputs_config:
+    enable: false
+created_at: 1731439009

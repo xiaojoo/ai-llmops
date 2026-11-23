@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "llmops-web"
+        IMAGE_TAG  = "0.0.${BUILD_NUMBER}"
+        DEPLOY_COMPOSE_FILE = "./docker/docker-compose.yaml"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "Checking out source code..."
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image ${IMAGE_NAME}:${IMAGE_TAG}..."
+                    sh """
+                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    """
+                }
+            }
+        }
+
+        stage('Deploy via Docker Compose') {
+            steps {
+                script {
+                    echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} via docker compose..."
+                    sh """
+                        docker compose -f ${DEPLOY_COMPOSE_FILE} down --remove-orphans
+                        IMAGE_TAG=${IMAGE_TAG} docker compose -f ${DEPLOY_COMPOSE_FILE} up -d
+                    """
+                }
+            }
+        }
+
+        stage('Clean Docker Image') {
+            steps {
+                script {
+                    echo "Cleaning Docker image ${IMAGE_NAME}:${IMAGE_TAG}..."
+                    sh """
+                        docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true
+                        docker image prune -f || true
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline finished successfully! Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+        }
+        failure {
+            echo "❌ Pipeline failed!"
+            sh "docker image prune -f || true"
+        }
+    }
+}

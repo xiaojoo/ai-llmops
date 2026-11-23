@@ -1,0 +1,26 @@
+model: deepseek-v4-flash-vision-exp
+label: deepseek-v4-flash-vision-exp
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 1000000
+max_output_tokens: 384000
+attributes:
+  model: deepseek-v4-flash-vision-exp
+parameters:
+  - name: temperature
+    use_template: temperature
+  - name: top_p
+    use_template: top_p
+  - name: max_tokens
+    use_template: max_tokens
+    default: 32768
+    max: 384000
+metadata:
+  pricing:
+    input: 0.05
+    output: 0.05
+    unit: 0.001
+    currency: RMB

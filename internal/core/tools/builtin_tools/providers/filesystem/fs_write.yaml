@@ -1,0 +1,4 @@
+name: fs_write
+label: 创建/覆盖文件
+description: 在工作区内创建新文件或整体覆盖已有文件（父目录自动创建，单文件大小受策略限制），返回结构化 JSON。覆盖式写入，局部修改请使用 fs_edit。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

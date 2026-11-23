@@ -1,0 +1,56 @@
+<idea-plugin>
+    <id>com.webapp.session-window</id>
+    <name>WebApp Session Window</name>
+    <vendor>internal</vendor>
+    <description><![CDATA[
+        Embed the WebApp AI session window in the IDE via JCEF.
+        ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <!-- 不声明 com.intellij.modules.jcef：IPGP 2.x runIde 沙箱平台中 JCEF 模块 ID 为 lib.jcef，
+         声明该 ID 会报 "requires plugin 'com.intellij.modules.jcef' to be installed" 导致插件无法加载。
+         JCEF 类/原生库随 IU 平台提供，运行期用 JBCefApp.isSupported() 检测，不可用时展示降级面板。 -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- @State 类不自动注册为 service（IPGP 2.x / 2024.2），
+             WebAppSettingsState.getInstance() 依赖此处注册，否则运行时 getService 抛异常 -->
+        <applicationService serviceImplementation="com.webapp.plugin.settings.WebAppSettingsState"/>
+        <toolWindow id="WebApp"
+                    anchor="right"
+                    icon="/icons/webapp.svg"
+                    factoryClass="com.webapp.plugin.toolwindow.WebAppToolWindowFactory"/>
+        <applicationConfigurable parentId="tools"
+                                 instance="com.webapp.plugin.settings.WebAppSettingsConfigurable"/>
+        <!-- 编辑器右键菜单：AI 代码操作（优化/解释/注释/自定义） -->
+        <editorPopupMenu id="webapp-code-actions"
+                         title="WebApp AI"
+                         group="webapp.ai"/>
+    </extensions>
+
+    <actions>
+        <action id="webapp.codeAction.optimize"
+                class="com.webapp.plugin.action.WebAppOptimizeAction"
+                text="优化选中代码"
+                description="WebApp AI 优化选中代码">
+            <add-to-group group-id="webapp.ai" anchor="first"/>
+        </action>
+        <action id="webapp.codeAction.explain"
+                class="com.webapp.plugin.action.WebAppExplainAction"
+                text="解释选中代码"
+                description="WebApp AI 解释选中代码">
+            <add-to-group group-id="webapp.ai" anchor="after" relative-to-action="webapp.codeAction.optimize"/>
+        </action>
+        <action id="webapp.codeAction.comment"
+                class="com.webapp.plugin.action.WebAppCommentAction"
+                text="注释选中代码"
+                description="WebApp AI 为选中代码添加注释">
+            <add-to-group group-id="webapp.ai" anchor="after" relative-to-action="webapp.codeAction.explain"/>
+        </action>
+        <action id="webapp.codeAction.custom"
+                class="com.webapp.plugin.action.WebAppCustomFillAction"
+                text="选中内容填入输入框"
+                description="WebApp AI：把选中内容填入聊天输入框，不自动发送">
+            <add-to-group group-id="webapp.ai" anchor="after" relative-to-action="webapp.codeAction.comment"/>
+        </action>
+    </actions>
+</idea-plugin>

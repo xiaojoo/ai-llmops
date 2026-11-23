@@ -1,0 +1,4 @@
+{
+  "ignore_dirs": ["target", "migrations", "*.generated"],
+  "ignore_extensions": [".map", ".tsbuildinfo", ".locks"]
+}

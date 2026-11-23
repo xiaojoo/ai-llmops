@@ -1,0 +1,4 @@
+name: fs_mkdir
+label: 创建目录
+description: 在工作区内创建目录（支持多级路径，等价 mkdir -p；已存在不报错），返回结构化 JSON。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

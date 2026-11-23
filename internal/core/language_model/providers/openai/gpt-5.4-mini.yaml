@@ -1,0 +1,21 @@
+model: gpt-5.4-mini
+label: gpt-5.4-mini
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+context_window: 400000
+max_output_tokens: 131072
+attributes:
+  model: gpt-5.4-mini
+parameters:
+  - name: max_tokens
+    use_template: max_tokens
+    default: 16384
+    max: 131072
+metadata:
+  pricing:
+    input: 0.0075
+    output: 0.0300
+    unit: 0.001
+    currency: RMB

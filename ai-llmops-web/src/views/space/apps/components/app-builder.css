@@ -1,0 +1,1112 @@
+/* ==========================================================================
+   仅用于 应用详情(AppLayoutView) 及 应用编排(DetailView) 相关组件
+   ========================================================================== */
+.ab-shell {
+  --ab-blue: #2563eb;
+  --ab-blue2: #3b82f6;
+  --ab-text: #172033;
+  --ab-muted: #7a8496;
+  --ab-line: #e8ebf0;
+  --ab-bg: #f7f8fa;
+  --ab-card: #fff;
+  --ab-soft: #f5f7fb;
+  --ab-green: #16a34a;
+  --ab-shadow: 0 8px 30px rgba(25, 42, 70, 0.08);
+}
+
+/* ===== 顶部导航（AppLayoutView） ===== */
+.ab-topbar {
+  height: 68px;
+  background: #fff;
+  border-bottom: 1px solid var(--ab-line, #e8ebf0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  gap: 24px;
+  flex: none;
+  position: relative;
+}
+
+.ab-brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ab-text, #172033);
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ab-top-tabs {
+  display: flex;
+  background: #f6f8fb;
+  border: 1px solid var(--ab-line, #e8ebf0);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.ab-top-tab {
+  border: 0;
+  background: transparent;
+  padding: 7px 20px;
+  border-radius: 7px;
+  color: #667085;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  line-height: 20px;
+  transition: all 0.15s;
+}
+
+.ab-top-tab:hover {
+  color: var(--ab-blue, #2563eb);
+}
+
+.ab-top-tab.active {
+  background: #fff;
+  color: var(--ab-blue, #2563eb);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+
+/* ===== 通用按钮 ===== */
+.ab-btn {
+  height: 36px;
+  padding: 0 15px;
+  border: 1px solid var(--ab-line, #e8ebf0);
+  border-radius: 8px;
+  background: #fff;
+  color: #344054;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ab-btn:hover {
+  border-color: #bfd3ff;
+  color: var(--ab-blue, #2563eb);
+}
+
+.ab-btn.primary {
+  background: var(--ab-blue, #2563eb);
+  border-color: var(--ab-blue, #2563eb);
+  color: #fff;
+}
+
+.ab-btn.primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.ab-btn.icon {
+  width: 38px;
+  padding: 0;
+  justify-content: center;
+}
+
+.ab-btn.ai {
+  color: var(--ab-blue, #2563eb);
+  border-color: #d7e4ff;
+  background: #f8fbff;
+}
+
+.ab-btn.ai:hover {
+  background: #eaf2ff;
+  border-color: #bfd3ff;
+}
+
+.ab-link {
+  color: var(--ab-blue, #2563eb);
+  cursor: pointer;
+  font-size: 13px;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.ab-link:hover {
+  color: #1d4ed8;
+}
+
+/* ===== 模型选择 chip（ModelConfig） ===== */
+.ab-model-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ab-line, #e8ebf0);
+  border-radius: 8px;
+  background: #fff;
+  color: #344054;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ab-model-chip:hover {
+  border-color: #bfd3ff;
+  background: #f8fbff;
+}
+
+/* ===== 中栏顶部标题条（同预览调试：白底 + 下边框） ===== */
+.ab-mid-head {
+  background: #fff;
+  border-bottom: 1px solid var(--ab-line, #e8ebf0);
+  height: 65px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.ab-mid-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #172033;
+  white-space: nowrap;
+  flex: none;
+}
+
+/* ===== 工作区（DetailView 左列） ===== */
+.ab-workspace {
+  background: var(--ab-bg, #f7f8fa);
+}
+
+.ab-workspace-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  box-sizing: border-box;
+  min-height: 0;
+  /* 极矮视口下（三张卡都到最小高度仍放不下时）内容区兜底滚动，保证不截断卡片 */
+  overflow-y: auto;
+}
+
+/* 三张卡片撑满视口：系统提示词占大头 */
+.ab-workspace-inner .ab-card {
+  margin-bottom: 0;
+}
+
+.ab-card-prompt {
+  /* 先吸收所有富余高度（basis 0 + grow），缩到 200px 下限后，
+     富余不足时才轮到下方「扩展插件总览」收缩（其列表内部滚动） */
+  flex: 1 1 0;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ab-card-stats {
+  flex: none;
+}
+
+/* 扩展插件总览：正常高度时按内容自适应；空间不足时可收缩（列表内部滚动），卡片整体不被截断 */
+.ab-card-plugins {
+  flex: 0 1 auto;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 提示词卡片内部：编辑器区域随卡片伸缩 */
+.ab-card-prompt .ab-prompt-root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.ab-card-prompt .ab-editor-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.ab-card-prompt .ab-editor-area {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  /* 右侧出血抵消外层 padding-right，让预览/编辑滚动条贴住卡片右边框 */
+  margin-right: -14px;
+}
+
+.ab-card-prompt .ab-editor-area .ab-md-preview,
+.ab-card-prompt .ab-editor-area .ab-prompt-input {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  /* 内容仍保留 14px 右内边距，只有滚动条贴边 */
+  padding-right: 14px;
+}
+
+/* 扩展插件总览：列表区跟随卡片伸缩（内部滚动，最多 3 行(12 张)上限由 .ab-plugin-overview 自身高度决定） */
+.ab-card-plugins .ab-plugin-overview {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  max-height: calc(152px * 3 + 12px * 2 + 16px + 16px);
+}
+
+/* 扩展插件小卡 4 列网格与间距 */
+.ab-card-plugins .ab-plugin-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 152px;
+  gap: 12px;
+}
+
+.ab-card-plugins .ab-plugin-card {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ab-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.ab-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ab-text, #172033);
+}
+
+.ab-page-desc {
+  margin-left: 12px;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
+/* ===== 卡片 ===== */
+.ab-card {
+  background: var(--ab-card, #fff);
+  border: 1px solid var(--ab-line, #e8ebf0);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.02);
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
+.ab-card-head {
+  height: 56px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eef0f3;
+  gap: 12px;
+}
+
+.ab-card-title {
+  font-weight: 700;
+  color: var(--ab-text, #172033);
+  font-size: 14px;
+}
+
+.ab-card-title .ab-badge {
+  font-size: 11px;
+  background: #ecfdf3;
+  color: var(--ab-green, #16a34a);
+  padding: 3px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+  font-weight: 500;
+}
+
+/* ===== 系统提示词编辑器 ===== */
+.ab-md-toolbar {
+  height: 42px;
+  border-bottom: 1px solid #eef0f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: #fbfcfe;
+}
+
+.ab-md-tabs {
+  display: flex;
+  gap: 3px;
+}
+
+.ab-md-tab {
+  border: 0;
+  background: transparent;
+  color: #8a94a6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.ab-md-tab:hover {
+  color: var(--ab-blue, #2563eb);
+}
+
+.ab-md-tab.active {
+  background: #eaf2ff;
+  color: var(--ab-blue, #2563eb);
+  font-weight: 600;
+}
+
+.ab-md-preview {
+  background: #fff;
+  line-height: 1.8;
+  color: #344054;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.ab-md-preview h1 {
+  font-size: 22px;
+  margin: 0 0 14px;
+  color: #172033;
+}
+
+.ab-md-preview h2 {
+  font-size: 17px;
+  margin: 24px 0 9px;
+  color: #172033;
+  border-bottom: 1px solid #eef0f4;
+  padding-bottom: 7px;
+}
+
+.ab-md-preview h3 {
+  font-size: 14px;
+  margin: 17px 0 6px;
+  color: #344054;
+}
+
+.ab-md-preview p {
+  margin: 8px 0;
+}
+
+.ab-md-preview ul {
+  padding-left: 22px;
+  margin: 8px 0;
+}
+
+.ab-md-preview li {
+  margin: 5px 0;
+}
+
+.ab-prompt-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  resize: none;
+  line-height: 1.8;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 14px;
+  color: #263247;
+  background: #fff;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* 编辑器内容区：固定高度（随视口自适应并限幅），内容超出后区域内滚动，
+   避免长提示词把卡片撑得过高 */
+.ab-editor-area {
+  height: clamp(340px, calc(100vh - 400px), 620px);
+  min-height: 0;
+}
+
+.ab-editor-area .ab-md-preview,
+.ab-editor-area .ab-prompt-input {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ab-editor-body {
+  padding: 10px 14px 12px;
+}
+
+.ab-editor-foot {
+  display: flex;
+  justify-content: space-between;
+  color: #98a2b3;
+  padding-top: 10px;
+  font-size: 12px;
+}
+
+/* ===== 应用能力总览（数字放大卡片样式：渐变徽章 + 大数字，一行 4 张，无脚部） ===== */
+.ab-overview {
+  padding: 16px;
+}
+
+.ab-card-stats .ab-card-head {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+/* 一行 4 张卡片网格 */
+.ab-ov-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* 单张卡片：按 accent 上浅下白渐变 + 右上角光晕（紧凑版，无脚部，无悬浮浮动） */
+.ab-ov-card {
+  --ab-acc: #2563eb;
+  --ab-acc-soft: rgba(37, 99, 235, 0.12);
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ab-acc) 5%, #fff) 0%,
+    #fff 46%
+  );
+  border: 1px solid #e5eaf2;
+  border-radius: 14px;
+  padding: 16px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  box-shadow: 0 8px 22px -14px rgba(30, 60, 120, 0.16);
+  animation: ab-ov-fadeUp 0.5s ease backwards;
+}
+.ab-ov-card:nth-child(2) { animation-delay: 0.08s; }
+.ab-ov-card:nth-child(3) { animation-delay: 0.16s; }
+.ab-ov-card:nth-child(4) { animation-delay: 0.24s; }
+
+@keyframes ab-ov-fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ab-ov-card::before {
+  content: "";
+  position: absolute;
+  top: -46px;
+  right: -46px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--ab-acc-soft),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.ab-acc-blue  { --ab-acc: #2563eb; --ab-acc-soft: rgba(37, 99, 235, 0.16); }
+.ab-acc-cyan  { --ab-acc: #0891b2; --ab-acc-soft: rgba(8, 145, 178, 0.16); }
+.ab-acc-amber { --ab-acc: #d97706; --ab-acc-soft: rgba(217, 119, 6, 0.16); }
+.ab-acc-green { --ab-acc: #16a34a; --ab-acc-soft: rgba(22, 163, 74, 0.16); }
+
+/* 渐变图标徽章 */
+.ab-ov-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ab-acc) 82%, #fff),
+    var(--ab-acc)
+  );
+  box-shadow: 0 10px 20px -8px var(--ab-acc-soft);
+  flex: none;
+}
+.ab-ov-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex: none;
+}
+
+/* 大数字 + 单位 */
+.ab-ov-count {
+  display: flex;
+  align-items: baseline;
+  line-height: 1;
+}
+.ab-ov-num {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #1f2937;
+  font-variant-numeric: tabular-nums;
+}
+.ab-ov-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  margin-left: 2px;
+}
+
+.ab-ov-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.ab-ov-desc {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== 扩展插件总览卡片（同应用能力总览样式，每卡不同强调色，无悬浮效果） ===== */
+.ab-plugin-overview {
+  padding: 16px;
+}
+
+.ab-plugin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ab-plugin-card {
+  --ab-pacc: #7c3aed;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ab-pacc) 5%, #fff) 0%,
+    #fff 46%
+  );
+  border: 1px solid #e5eaf2;
+  border-radius: 14px;
+  padding: 14px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  min-width: 0;
+  box-shadow: 0 8px 22px -14px color-mix(in srgb, var(--ab-pacc) 30%, transparent);
+}
+
+/* 右上角同色光晕（与应用能力总览卡片同款） */
+.ab-plugin-card::before {
+  content: "";
+  position: absolute;
+  top: -46px;
+  right: -46px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--ab-pacc) 15%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.ab-plugin-card-rel {
+  position: relative;
+}
+
+/* 每张插件卡片右上角的设置图标 */
+.ab-plugin-card-gear {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #a9a3c7;
+  cursor: pointer;
+  border-radius: 7px;
+  padding: 0;
+  z-index: 1;
+}
+
+.ab-plugin-card-gear:hover {
+  color: var(--ab-pacc);
+  background: color-mix(in srgb, var(--ab-pacc) 12%, #fff);
+}
+
+/* 渐变图标徽章（同应用能力总览，颜色随卡片强调色） */
+.ab-plugin-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ab-pacc) 82%, #fff),
+    var(--ab-pacc)
+  );
+  box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--ab-pacc) 45%, transparent);
+  margin-top: 6px;
+}
+
+.ab-plugin-card-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex: none;
+  filter: brightness(0) invert(1);
+}
+
+.ab-plugin-card-icon-fallback {
+  background: transparent;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+
+.ab-plugin-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 描述最多显示两行，超出才省略 */
+.ab-plugin-card-desc {
+  font-size: 11.5px;
+  color: #6b7280;
+  max-width: 100%;
+  min-width: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+/* ===== AI 优化弹窗字段 ===== */
+.ab-optimize-label {
+  display: block;
+  font-weight: 600;
+  color: #344054;
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.ab-optimize-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dfe4ec;
+  border-radius: 7px;
+  padding: 9px 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.ab-optimize-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dfe4ec;
+  border-radius: 7px;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.7;
+  height: 200px;
+  resize: vertical;
+  background: #fbfcfe;
+  color: #667085;
+  font-family: inherit;
+}
+
+.ab-optimize-input:focus,
+.ab-optimize-textarea:focus {
+  border-color: #7ba6ff;
+  box-shadow: 0 0 0 3px #eaf2ff;
+}
+
+.ab-optimize-result {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid #dbe7ff;
+  border-radius: 9px;
+  background: #f8fbff;
+  color: #667085;
+  line-height: 1.6;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ab-optimize-result p {
+  margin: 0;
+}
+
+/* ===== 左侧「应用结构」导航栏 ===== */
+/* 三栏：左侧导航可折叠（--ab-nav-w 由 DetailView 控制，收起时置 0）；右侧预览调试 680px
+   行高固定为容器高度（minmax(0,1fr)），三栏内部各自滚动，避免内容把行撑高导致底部被截断 */
+.ab-3col {
+  display: grid;
+  grid-template-columns: var(--ab-nav-w, 300px) minmax(0, 1fr) 680px;
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+  height: calc(100vh - 68px);
+}
+.ab-3col > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 视口 <1520：右栏预览调试从 680 收窄到 460，左栏同步略收窄，给中栏留空间 */
+@media (max-width: 1520px) {
+  .ab-3col {
+    grid-template-columns: var(--ab-nav-w, 280px) minmax(0, 1fr) 460px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .ab-3col {
+    grid-template-columns: var(--ab-nav-w, 260px) minmax(0, 1fr) 420px;
+  }
+}
+
+/* 视口收窄时的隐藏顺序：先「应用结构」(≤1150 由 DetailView 自动收起)，
+   再「应用编排」(≤1000)，最后只保留「预览调试」占满整行 */
+@media (max-width: 1000px) {
+  .ab-3col {
+    grid-template-columns: var(--ab-nav-w, 220px) minmax(0, 1fr);
+  }
+  .ab-mid-col {
+    display: none;
+  }
+  .ab-right-panel {
+    width: auto;
+    border-left: 0;
+  }
+}
+
+.ab-side-nav {
+  background: #fff;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ab-side-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #172033;
+  white-space: nowrap;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--ab-line, #e8ebf0);
+  box-sizing: border-box;
+}
+
+/* 展开按钮：导航收起后悬浮在左缘，点击展开 */
+.ab-side-reopen {
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  z-index: 30;
+  width: 28px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ab-line, #e8ebf0);
+  border-radius: 8px;
+  background: #fff;
+  color: #667085;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
+}
+
+.ab-side-reopen:hover {
+  color: #2563eb;
+  border-color: #bfd3ff;
+}
+
+.ab-side-group {
+  margin-bottom: 4px;
+}
+
+.ab-side-group-title {
+  padding: 10px 16px 4px;
+  color: #273449;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ab-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  margin: 2px 8px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: #596579;
+  cursor: pointer;
+  font-size: 14px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.ab-nav-row:hover {
+  background: #f5f8ff;
+}
+
+.ab-nav-row.active {
+  background: #eaf2ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.ab-nav-glyph {
+  width: 18px;
+  text-align: center;
+  color: #667085;
+  flex: none;
+}
+
+.ab-nav-row.active .ab-nav-glyph {
+  color: #2563eb;
+}
+
+.ab-nav-badge {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #f0f2f5;
+  color: #667085;
+  flex: none;
+  line-height: 16px;
+}
+
+.ab-nav-badge.on {
+  background: #ecfdf3;
+  color: #16a34a;
+}
+
+.ab-nav-badge.off {
+  background: #f0f2f5;
+  color: #98a2b3;
+}
+
+.ab-side-hint {
+  margin: 18px 16px 0;
+  font-size: 12px;
+  color: #c0c6d0;
+  line-height: 1.6;
+}
+
+/* ===== 能力配置弹窗（弹窗内复用能力组件） ===== */
+/* 弹窗标题行：标题与描述同一行，× 在行尾 */
+.ab-ability-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.ab-ability-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #172033;
+  white-space: nowrap;
+  flex: none;
+}
+
+/* 描述：小字、与标题同行（对齐参考「添加插件」弹框） */
+.ab-ability-modal-sub {
+  font-size: 11px;
+  color: #98a2b3;
+  line-height: 1.5;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ab-modal-close {
+  color: #98a2b3 !important;
+  flex: none;
+  margin-left: auto;
+  margin-right: -8px;
+}
+
+.ab-modal-collapse {
+  background: #fff;
+}
+
+/* 弹窗已有标题，隐藏组件内折叠标题行；保留右侧操作按钮可用（靠右） */
+.ab-modal-collapse .arco-collapse-item-header {
+  height: 36px !important;
+  min-height: 36px !important;
+  justify-content: flex-end;
+  padding: 0 6px;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.ab-modal-collapse .arco-collapse-item-header-title,
+.ab-modal-collapse .arco-collapse-item-header-icon {
+  display: none;
+}
+
+.ab-modal-collapse .arco-collapse-item:last-child {
+  border-bottom: 0;
+}
+
+/* ===== 右侧预览调试面板 ===== */
+.ab-right-panel {
+  background: #fff;
+  border-left: 1px solid var(--ab-line, #e8ebf0);
+}
+
+.ab-preview-head {
+  height: 65px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--ab-line, #e8ebf0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  flex: none;
+}
+
+.ab-preview-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ab-text, #172033);
+  white-space: nowrap;
+}
+
+/* ===== 预览调试空状态（推荐问题） ===== */
+.ab-chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.ab-opening-bubble {
+  background: #f7f8fb;
+  border: 1px solid #edf0f4;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #344054;
+  line-height: 1.7;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.ab-qs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  width: 100%;
+}
+
+.ab-q {
+  border: 1px solid var(--ab-line, #e8ebf0);
+  background: #fff;
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: #667085;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.5;
+  transition: all 0.15s;
+}
+
+.ab-q:hover {
+  border-color: #bfd3ff;
+  color: var(--ab-blue, #2563eb);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06);
+}
+
+/* 1000-1200：右侧预览 420px，给中栏留空间；≤1000 由上方规则隐藏中栏、预览占满 */
+@media (min-width: 1001px) and (max-width: 1200px) {
+  .ab-right-panel {
+    width: 420px !important;
+  }
+  .ab-workspace-inner {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .ab-top-tabs {
+    display: none;
+  }
+  .ab-topbar {
+    gap: 12px;
+    padding: 0 14px;
+  }
+}
+
+/* 很窄的视口：隐藏左侧应用信息块，保证「更新发布」等右侧操作按钮完整可见 */
+@media (max-width: 640px) {
+  .ab-top-info {
+    display: none !important;
+  }
+  .ab-topbar {
+    gap: 8px;
+    padding: 0 10px;
+  }
+}

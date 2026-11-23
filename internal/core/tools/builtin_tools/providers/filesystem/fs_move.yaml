@@ -1,0 +1,4 @@
+name: fs_move
+label: 移动/重命名
+description: 移动或重命名工作区内的文件/目录（等价 mv，目标父目录自动创建），返回结构化 JSON。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

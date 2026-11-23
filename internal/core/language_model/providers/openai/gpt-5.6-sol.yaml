@@ -1,0 +1,21 @@
+model: gpt-5.6-sol
+label: gpt-5.6-sol
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+context_window: 1050000
+max_output_tokens: 131072
+attributes:
+  model: gpt-5.6-sol
+parameters:
+  - name: max_tokens
+    use_template: max_tokens
+    default: 32768
+    max: 131072
+metadata:
+  pricing:
+    input: 0.0400
+    output: 0.1600
+    unit: 0.001
+    currency: RMB

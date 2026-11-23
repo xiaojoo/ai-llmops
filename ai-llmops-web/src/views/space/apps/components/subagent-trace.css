@@ -1,0 +1,625 @@
+/* ============================================================
+ * subagent-trace.css — 任务详情视图的 ai-agent-trace.html 风格外壳
+ * 供 SubAgentDetail / SubAgentTraceList / SubAgentDetailPanel 共用。
+ * 类名前缀 stt- 避免污染全局。
+ * ============================================================ */
+
+.subagent-trace {
+  --st-bg: #fff;
+  --st-text: #1f2937;
+  --st-muted: #6b7280;
+  --st-border: #e5e7eb;
+  --st-blue: #2563eb;
+  --st-line: #d1d5db;
+  --st-model-bg: #f3eafa;
+  --st-model: #7c4d9f;
+  --st-ctx-bg: #eaf8ef;
+  --st-ctx: #16a05d;
+  --st-tool-bg: #fff2df;
+  --st-tool: #e68a18;
+  --st-detail: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--st-bg);
+  color: var(--st-text);
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+.subagent-trace *,
+.subagent-trace *::before,
+.subagent-trace *::after {
+  box-sizing: border-box;
+}
+.subagent-trace button,
+.subagent-trace input {
+  font: inherit;
+}
+
+/* ---------- toolbar ---------- */
+.stt-toolbar {
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 0 18px;
+  border-bottom: 1px solid var(--st-border);
+  background: #fff;
+  position: relative;
+}
+.stt-stats {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  color: #737983;
+  font-size: 12px;
+}
+/* 统计项：不换行、不收缩 */
+.stt-stat {
+  flex: none;
+  white-space: nowrap;
+}
+.stt-stat b {
+  font-weight: 600;
+  color: var(--st-text);
+}
+.stt-search {
+  width: 180px;
+  height: 27px;
+  border: 1px solid #d7dbe0;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  flex: none;
+}
+.stt-search span {
+  padding: 0 7px;
+  color: #9aa1aa;
+}
+.stt-search input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--st-text);
+  font-size: 12px;
+}
+
+/* 窄视口搜索：常驻框隐藏，图标按钮 + 浮层搜索框（浮在统计栏上） */
+.stt-search-mobile {
+  display: none;
+}
+.stt-search-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: #858b94;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.stt-search-toggle:hover,
+.stt-search-toggle.open {
+  color: var(--st-blue);
+}
+.stt-search-pop {
+  display: none;
+  position: absolute;
+  left: 18px;
+  right: 14px;
+  top: 5px;
+  bottom: 5px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d7dbe0;
+  border-radius: 6px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  z-index: 30;
+}
+.stt-search-pop input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--st-text);
+  font-size: 13px;
+  padding: 0 12px;
+}
+
+/* ---------- timeline ---------- */
+.stt-timeline {
+  height: 54px;
+  border-bottom: 1px solid var(--st-border);
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  flex: none;
+  background: #fff;
+}
+.stt-legend {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding-left: 18px;
+  font-size: 10px;
+  color: #8a9099;
+}
+.stt-legend i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.stt-i-model {
+  background: #9b73c4;
+}
+.stt-i-tool {
+  background: var(--st-tool);
+}
+.stt-i-ctx {
+  background: var(--st-ctx);
+}
+.stt-track {
+  position: relative;
+  margin: 8px 16px 8px 0;
+  border-bottom: 1px solid #eceff2;
+}
+.stt-tick {
+  position: absolute;
+  bottom: -2px;
+  width: 3px;
+  height: 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  transform: translateX(-50%);
+  opacity: 0.75;
+}
+.stt-tick:hover,
+.stt-tick.active {
+  opacity: 1;
+  height: 13px;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px currentColor;
+}
+.stt-tick.model {
+  background: #9b73c4;
+  color: #9b73c4;
+}
+.stt-tick.tool {
+  background: var(--st-tool);
+  color: var(--st-tool);
+}
+.stt-tick.ctx {
+  background: var(--st-ctx);
+  color: var(--st-ctx);
+}
+
+/* ---------- body ---------- */
+.stt-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  position: relative;
+}
+.stt-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.stt-trace-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  scroll-behavior: smooth;
+}
+
+/* ---------- turn（子任务区段） ---------- */
+.stt-turn {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  position: relative;
+}
+.stt-turn-number {
+  padding: 10px 10px 0 18px;
+  color: #8b929c;
+  font-size: 11px;
+  white-space: nowrap;
+  position: relative;
+}
+.stt-turn-number::before {
+  content: '';
+  position: absolute;
+  left: 31px;
+  top: 26px;
+  bottom: -14px;
+  width: 1px;
+  background: var(--st-line);
+}
+.stt-turn:last-child .stt-turn-number::before {
+  bottom: 0;
+}
+.stt-turn-content {
+  border-bottom: 1px solid #f0f1f3;
+  padding: 4px 18px 10px 0;
+  min-width: 0;
+}
+.stt-turn-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px 2px;
+  font-size: 12px;
+  color: #374151;
+  min-width: 0;
+}
+.stt-turn-head .title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stt-turn-head .meta {
+  color: #8b929c;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.stt-turn-head .status {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.stt-turn-head .status.done {
+  background: var(--st-ctx-bg);
+  color: var(--st-ctx);
+}
+.stt-turn-head .status.running {
+  background: #e8f0fe;
+  color: var(--st-blue);
+}
+.stt-turn-head .status.pending {
+  background: #f1f2f4;
+  color: #6b7280;
+}
+
+/* ---------- message（事件行） ---------- */
+/* 固定列宽网格：dot(绝对定位) / 徽章 56px / 内容 1fr，
+   保证各行徽章、内容在同一水平位置对齐；
+   垂直方向整体居中，徽章/内容在同一行内垂直对齐 */
+.stt-message {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.stt-message:hover {
+  background: #f8fafc;
+}
+.stt-message.selected {
+  background: #f4f7ff;
+  border-color: #dbe6ff;
+}
+.stt-message .stt-badge {
+  /* 列宽固定 56px 保证内容对齐；徽章背景按文字长度自适应，并在列内右对齐 */
+  justify-self: end;
+  width: auto;
+  box-sizing: border-box;
+}
+.stt-message .stt-content {
+  min-width: 0;
+}
+.stt-dot {
+  position: absolute;
+  left: 28px;
+  margin-top: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #b7bec8;
+  border: 1px solid #fff;
+  z-index: 2;
+}
+.stt-message.selected .stt-dot {
+  background: var(--st-blue);
+  box-shadow: 0 0 0 2px #dbeafe;
+}
+.stt-badge {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.stt-badge.model {
+  background: var(--st-model-bg);
+  color: var(--st-model);
+}
+.stt-badge.ctx {
+  background: var(--st-ctx-bg);
+  color: var(--st-ctx);
+}
+.stt-badge.tool {
+  background: var(--st-tool-bg);
+  color: var(--st-tool);
+}
+.stt-content {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--st-text);
+}
+.stt-content.err {
+  color: #dc2626;
+}
+.stt-content .tool-name {
+  font-weight: 600;
+}
+.stt-content .tool-in {
+  color: #4b5563;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+/* MODEL 输出内容行内单行显示：超出视口宽度时末尾省略号，完整内容在右侧详情面板查看 */
+.stt-content.stt-clamp {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stt-hl {
+  background: #fff0a8;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.stt-empty {
+  padding: 35px 30px;
+  color: #9aa1aa;
+}
+
+/* ---------- plan（任务分解计划） ---------- */
+.stt-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 2px;
+}
+.stt-plan-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+  background: #fafafa;
+  border: 1px solid #f0f1f3;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+.stt-plan-item .no {
+  flex: none;
+  color: #8b929c;
+}
+.stt-caret {
+  flex: none;
+  color: #8b929c;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+/* ---------- detail panel ---------- */
+/* 左右分栏：详情面板作为 .stt-body 的 flex 右列，常驻不悬浮、不压缩列表宽度仅占右列；
+   由 .stt-main（左列表）与右侧面板共享一行高度。 */
+.stt-detail {
+  /* 右列自适应宽度：最多 420px，窄视口自动收窄至 42%，
+     避免在缩窄的应用窗口（如打开 DevTools）里占过大比例。
+     flex-basis + width + max-width 三处约束，防止长内容把 flex 项反向撑宽。 */
+  flex: 0 0 auto;
+  width: min(var(--st-detail), 42%);
+  max-width: min(var(--st-detail), 42%);
+  border-left: 1px solid var(--st-border);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.stt-detail-head {
+  height: 48px;
+  border-bottom: 1px solid var(--st-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  flex: none;
+}
+.stt-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  min-width: 0;
+}
+.stt-detail-title .txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stt-close {
+  border: 0;
+  background: none;
+  font-size: 21px;
+  color: #858b94;
+  cursor: pointer;
+  line-height: 1;
+  padding: 3px 6px;
+}
+.stt-close:hover {
+  color: #111827;
+}
+.stt-detail-tabs {
+  height: 38px;
+  border-bottom: 1px solid var(--st-border);
+  display: flex;
+  gap: 18px;
+  padding: 0 14px;
+  flex: none;
+}
+.stt-dtab {
+  border: 0;
+  background: none;
+  color: #7b818a;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+}
+.stt-dtab.active {
+  color: var(--st-blue);
+  font-weight: 600;
+}
+.stt-dtab.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--st-blue);
+}
+.stt-detail-scroll {
+  overflow: auto;
+  padding: 14px;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+.stt-meta {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  row-gap: 10px;
+  margin-bottom: 15px;
+}
+.stt-meta .stt-label {
+  color: #8b929c;
+}
+.stt-meta .stt-value {
+  overflow-wrap: anywhere;
+}
+.stt-preview-title {
+  font-weight: 600;
+  margin: 12px 0 8px;
+  color: #4b5563;
+}
+.stt-markdown {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #374151;
+}
+.stt-code {
+  background: #f5f6f7;
+  border: 1px solid #e8eaed;
+  padding: 10px 11px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: auto;
+  font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #374151;
+  margin: 0;
+}
+.stt-block {
+  background: #fafafa;
+  border: 1px solid #f0f1f3;
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.stt-block .cap {
+  font-size: 11px;
+  color: #8b929c;
+  margin-bottom: 4px;
+}
+.stt-block pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #374151;
+}
+.stt-err {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 10px;
+}
+
+/* ---------- responsive ---------- */
+/* 窄视口：搜索框收起为图标，点击弹出浮层搜索框 */
+@media (max-width: 760px) {
+  .stt-search-desktop {
+    display: none;
+  }
+  .stt-search-mobile {
+    display: block;
+  }
+  .stt-search-toggle {
+    display: flex;
+  }
+  .stt-search-pop {
+    display: flex;
+  }
+  .stt-stats {
+    gap: 12px;
+  }
+}
+@media (max-width: 1400px) and (min-width: 1000px) {
+  .subagent-trace {
+    --st-detail: 360px;
+  }
+}
+/* 中等宽度：左右分栏仍可用，仅收窄右列宽度 */
+@media (max-width: 999px) {
+  .subagent-trace {
+    --st-detail: 340px;
+  }
+  /* 超窄视口：左右分栏放不下，详情面板退化为覆盖右侧的抽屉形态 */
+  .stt-body {
+    position: relative;
+  }
+  .stt-detail {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    transform: translateX(100%);
+    transition: transform 0.18s;
+    box-shadow: -8px 0 24px rgba(15, 23, 42, 0.1);
+  }
+  .stt-detail.open {
+    transform: translateX(0);
+  }
+}

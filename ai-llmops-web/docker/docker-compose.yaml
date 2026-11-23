@@ -1,0 +1,13 @@
+services:
+  llmops-web:
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    container_name: llmops-web
+    restart: always
+    environment: [ ]
+    ports:
+      - "3000:3000"
+    networks:
+      - jenkins_default
+networks:
+  jenkins_default:
+    external: true

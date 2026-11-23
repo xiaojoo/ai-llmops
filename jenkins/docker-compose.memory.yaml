@@ -1,0 +1,84 @@
+# ═════════════════════════════════════════════════════════════════════════
+# 腾讯记忆四件套编排（memory-core / memory-hub / memory-proxy / minio）
+# 仅作为 llmops 应用栈（jenkins/docker-compose.yaml 的 llmops-*）的附加组件，
+# 不自建 db/redis/weaviate（应用栈已提供 llmops-db/redis/weaviate）。
+#
+# 参数来源：memory.env（模板 memory.env.example），yaml 不写死密钥。
+# 由 deploy-memory.sh 驱动：先由 env 生成 .runtime/*.yaml 配置，再 compose up。
+# ═════════════════════════════════════════════════════════════════════════
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ./volumes/minio/data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+
+  memory-core:
+    image: ${MEMORY_CORE_IMAGE:-agentmemory/memory-core:latest}
+    container_name: memory-core
+    restart: always
+    environment:
+      TDAI_GATEWAY_PORT: 8420
+      TDAI_GATEWAY_HOST: 0.0.0.0
+      TDAI_GATEWAY_API_KEY: ${MEMORY_CORE_GATEWAY_API_KEY-}
+    volumes:
+      - ${MEMORY_CORE_VOLUME:-tdai-memory-core-data}:/data/tdai-memory
+      - ./.runtime/tdai-gateway.yaml:/data/config/tdai-gateway.yaml:ro
+    ports:
+      - "${MEMORY_CORE_PORT:-8420}:8420"
+
+  memory-hub:
+    image: ${MEMORY_HUB_IMAGE:-agentmemory/memory-hub:latest}
+    container_name: memory-hub
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      PANEL_PORT: 8125
+      KNOWLEDGE_PORT: 8424
+      KNOWLEDGE_PUBLIC_BASE_URL: ${KNOWLEDGE_PUBLIC_BASE_URL:-http://host.docker.internal:8424/v3}
+      REMOTE_INSTANCE_ID: default
+      REMOTE_INSTANCE_NAME: default
+      REMOTE_INSTANCE_URL: http://memory-core:8420
+      # hub/proxy 的 gateway key 默认 "local"（与官方脚本一致）；留空时不能用空值
+      REMOTE_INSTANCE_KEY: ${MEMORY_CORE_GATEWAY_API_KEY:-local}
+      REMOTE_INSTANCE_PROXY_URL: ${MEMORY_HUB_PROXY_PUBLIC_URL-}
+      LLM_MODE: custom                          # knowledge 直连 memory 组 LLM
+      LLM_PROTOCOL: ${MEMORY_LLM_PROTOCOL:-openai}
+      LLM_API_KEY: ${MEMORY_LLM_API_KEY}
+      LLM_BASE_URL: ${MEMORY_LLM_BASE_URL}
+      LLM_MODEL: ${MEMORY_LLM_MODEL}
+      KNOWLEDGE_LLM_BINDING_SYNC: '0'
+    volumes:
+      - ${PANEL_VOLUME:-tdai-panel-data}:/data/knowledge
+    ports:
+      - "${PANEL_PORT:-8125}:8125"
+      - "${KNOWLEDGE_PORT:-8424}:8424"
+    depends_on:
+      - memory-core
+
+  memory-proxy:
+    image: ${PROXY_IMAGE:-agentmemory/memory-proxy:latest}
+    container_name: memory-proxy
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./.runtime/proxy-config.yaml:/data/config.yaml:ro
+    ports:
+      - "${PROXY_PORT:-8096}:8096"
+    depends_on:
+      - memory-core
+      - memory-hub
+
+volumes:
+  tdai-memory-core-data:
+  tdai-panel-data:

@@ -1,0 +1,802 @@
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import {
+  createApiToolProvider,
+  debugApiTool,
+  deleteApiToolProvider,
+  getApiToolProvider,
+  getApiToolProvidersWithPage,
+  updateApiToolProvider,
+  validateOpenAPISchema,
+} from '@/services/api-tools.ts'
+import moment from 'moment'
+import CodeBlock from '@/components/JsonViewer.vue'
+import { typeMap, apiPrefix } from '@/config'
+import { useRoute } from 'vue-router'
+import {
+  type FormInstance,
+  Message,
+  Modal,
+  type FileItem,
+  type RequestOption,
+  type UploadRequest,
+  type ValidatedError,
+} from '@arco-design/web-vue'
+import type {
+  CreateApiToolProviderRequest,
+  GetApiToolProvidersWithPageResponse,
+  HeaderItem,
+  ToolItem,
+  UpdateApiToolProviderRequest,
+} from '@/models/api-tool.ts'
+import { uploadImage } from '@/services/upload-file.ts'
+
+const route = useRoute()
+const props = defineProps({
+  createType: {
+    type: String,
+    required: true,
+  },
+})
+const emits = defineEmits(['update-create-type'])
+type ProviderItem = GetApiToolProvidersWithPageResponse['data']['list'][number]
+const providers = reactive<ProviderItem[]>([])
+
+const paginator = reactive({
+  current_page: 1,
+  page_size: 20,
+  total_page: 0,
+  total_record: 0,
+})
+
+const loading = ref<boolean>(false)
+const showIdx = ref<number>(-1)
+
+// API 插件图标：使用各自上传的 icon（COS 完整地址 / 后端相对路径）；
+// 相对路径缺 /api 时补前缀，空则回退默认应用图标。
+// 注意：API 插件不是 builtin_tools，不能走 /builtin_tools/{name}/icon。
+const providerIcon = (provider: ProviderItem): string => {
+  const icon = provider.icon || ''
+  if (/^https?:\/\//i.test(icon) || icon.startsWith('/api/')) return icon
+  if (icon.startsWith('/')) return `${apiPrefix}${icon}`
+  return `${apiPrefix}/default-app-icon`
+}
+// 当前抽屉选中的提供商（仅在 showIdx != -1 的 UI 分支中访问，运行时安全）
+const currentProvider = computed<ProviderItem>(() => providers[showIdx.value]!)
+const searchWord = computed(() => {
+  return Array.isArray(route.query.search_word)
+    ? (route.query.search_word[0] ?? '')
+    : (route.query.search_word ?? '')
+})
+const showUpdateModal = ref<boolean>(false)
+const showUpdateModalLoading = ref<boolean>(false)
+const submitLoading = ref<boolean>(false)
+
+// ============ 工具调试 ============
+// 当前选中调试的工具名（null 表示未选中）
+const debugToolName = ref<string>('')
+// 调试参数表单：工具名 -> 参数名 -> 值
+const debugArgs = reactive<Record<string, Record<string, unknown>>>({})
+const debugLoading = ref<boolean>(false)
+const debugResult = ref<Record<string, string>>({})
+
+// 当前选中的工具对象
+const debugTool = computed<ToolItem | undefined>(() =>
+  currentProvider.value?.tools?.find((t) => t.name === debugToolName.value),
+)
+
+const selectDebugTool = (toolName: string) => {
+  // 再次点击同一个工具则取消选中
+  debugToolName.value = debugToolName.value === toolName ? '' : toolName
+  if (debugToolName.value) {
+    debugArgs[toolName] ??= {}
+  }
+}
+
+// 获取某工具的调试参数对象（不存在时先初始化）
+const getDebugArgs = (toolName: string): Record<string, unknown> => {
+  debugArgs[toolName] ??= {}
+  return debugArgs[toolName]
+}
+
+// 绑定参数值（确保响应式更新）
+const setDebugArg = (toolName: string, argName: string, value: unknown) => {
+  getDebugArgs(toolName)[argName] = value
+}
+
+// 获取布尔参数值（类型化取值，避免模板内 as 联合类型断言触发 ESLint 过滤器误报）
+const getDebugArgBool = (toolName: string, argName: string): boolean | undefined =>
+  getDebugArgs(toolName)[argName] as boolean | undefined
+
+const runDebug = async (tool: ToolItem) => {
+  if (debugLoading.value) return
+  try {
+    debugLoading.value = true
+    debugResult.value[tool.name] = ''
+    const args = debugArgs[tool.name] ?? {}
+    const resp = await debugApiTool(currentProvider.value.id, tool.name, args)
+    debugResult.value[tool.name] = resp.data.result
+  } catch (err) {
+    debugResult.value[tool.name] = (err as Error).message
+  } finally {
+    debugLoading.value = false
+  }
+}
+
+const handleCancel = () => {
+  formRef.value?.resetFields()
+  form.fileList = []
+  emits('update-create-type', '')
+  showUpdateModal.value = false
+}
+
+const form = reactive<{
+  icon: string
+  name: string
+  openapi_schema: string
+  headers: HeaderItem[]
+  fileList: FileItem[]
+}>({
+  icon: '/api/default-app-icon',
+  name: '',
+  openapi_schema:
+    '{\n' +
+    '    "description": "这是一个查询和返回定义单词字典的工具",\n' +
+    '    "server": "https://dict.youdao.com",\n' +
+    '    "paths": {\n' +
+    '        "/suggest": {\n' +
+    '            "get": {\n' +
+    '                "description": "根据传递的单词查询其字典信息",\n' +
+    '                "operationId": "YoudaoSuggest053",\n' +
+    '                "parameters": [\n' +
+    '                    {\n' +
+    '                        "name": "q",\n' +
+    '                        "in": "query",\n' +
+    '                        "description": "要检索查询的单词，例如 love/computer",\n' +
+    '                        "required": true,\n' +
+    '                        "type": "str"\n' +
+    '                    },\n' +
+    '                    {\n' +
+    '                        "name": "doctype",\n' +
+    '                        "in": "query",\n' +
+    '                        "description": "返回的结果类型，支持 json 和 xml 两种格式。默认情况下为 json",\n' +
+    '                        "required": false,\n' +
+    '                        "type": "str"\n' +
+    '                    }\n' +
+    '                ]\n' +
+    '            }\n' +
+    '        }\n' +
+    '    }\n' +
+    '}',
+  headers: [],
+  fileList: [],
+})
+const formRef = ref<FormInstance | null>(null)
+
+const tools = computed(() => {
+  try {
+// 解析openapi_schema数据
+    const available_tools = []
+    const openapi_schema = JSON.parse(form.openapi_schema)
+    if ('paths' in openapi_schema) {
+// 循环所有的paths并提取工具
+      for (const path in openapi_schema['paths']) {
+// 遍历对应path下的get和post方法
+        for (const method in openapi_schema['paths'][path]) {
+          if (['get', 'post'].includes(method)) {
+// 提取工具信息，并校验是否存在name、description这两个字典
+            const tool = openapi_schema['paths'][path][method]
+            if ('operationId' in tool && 'description' in tool) {
+              available_tools.push({
+                name: tool?.operationId,
+                description: tool?.description,
+                method: method,
+                path: path,
+              })
+            }
+          }
+        }
+      }
+    }
+    return available_tools
+  } catch {
+    Message.error('解析openai_schema出错')
+  }
+  return []
+})
+
+const handleUpdate = async () => {
+  try {
+// 获取当前显示的provider_id
+    showUpdateModalLoading.value = true
+    showUpdateModal.value = true
+    const provider_id = currentProvider.value.id
+// 根据拿到的id获取该工具提供商的详情信息
+    const resp = await getApiToolProvider(provider_id)
+    const data = resp.data
+    formRef.value?.resetFields()
+    form.icon = data.icon
+    form.name = data.name
+    form.openapi_schema = data.openapi_schema
+    form.headers = data.headers
+    form.fileList = data.icon
+      ? [
+          {
+            uid: '0',
+            name: 'icon',
+            url: data.icon,
+            status: 'done',
+          },
+        ]
+      : []
+  } finally {
+    showUpdateModalLoading.value = false
+  }
+}
+
+const loadMoreData = async (init: boolean = false) => {
+  if (!init && paginator.current_page > paginator.total_page) return
+
+  try {
+    loading.value = true
+    const resp = await getApiToolProvidersWithPage(
+      paginator.current_page,
+      paginator.page_size,
+      searchWord.value,
+    )
+    const data = resp.data
+
+    paginator.current_page = data.paginator.current_page
+    paginator.page_size = data.paginator.page_size
+    paginator.total_page = data.paginator.total_page
+    paginator.total_record = data.paginator.total_record
+
+    if (paginator.current_page <= paginator.total_page) {
+      paginator.current_page += 1
+    }
+
+    if (init) {
+      providers.splice(0, providers.length, ...data.list)
+    } else {
+      providers.push(...data.list)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleScroll = (event: UIEvent) => {
+// 获取滚动距离、可滚动最大距离、客户端/浏览器窗口高度
+  const { scrollTop, scrollHeight, clientHeight } = event.target as HTMLElement
+  if (scrollTop + clientHeight >= scrollHeight - 10) {
+    if (loading.value) {
+      return
+    }
+    loadMoreData()
+  }
+}
+
+const initData = async () => {
+  paginator.current_page = 1
+  paginator.page_size = 20
+  paginator.total_page = 0
+  paginator.total_record = 0
+
+  await loadMoreData(true)
+}
+
+onMounted(async () => {
+  await loadMoreData(true)
+})
+
+watch(searchWord, () => {
+  initData()
+})
+
+// 删除工具提供者
+const handleDelete = (provider_id: string) => {
+  Modal.warning({
+    title: '确认删除这个工具？',
+    content: '删除工具是不可逆的，AI应用将无法访问您的工具',
+    hideCancel: false,
+    onOk: async () => {
+      try {
+        const resp = await deleteApiToolProvider(provider_id)
+        Message.success(resp.message)
+      } finally {
+        handleCancel()
+        showIdx.value = -1
+        await initData()
+      }
+    },
+  })
+}
+
+// 添加或者更新
+const handleSubmit = async ({
+  values,
+  errors,
+}: {
+  values: Record<string, unknown>
+  errors: Record<string, ValidatedError> | undefined
+}) => {
+  if (errors) return
+  try {
+    submitLoading.value = true
+    if (props.createType === 'tool') {
+      const resp = await createApiToolProvider(values as CreateApiToolProviderRequest)
+      Message.success(resp.message)
+    } else if (showUpdateModal.value) {
+      const resp = await updateApiToolProvider(
+        currentProvider.value.id,
+        values as UpdateApiToolProviderRequest,
+      )
+      Message.success(resp.message)
+    }
+    handleCancel()
+    showIdx.value = -1
+  } finally {
+    submitLoading.value = false
+  }
+  await initData()
+}
+
+// 图标上传
+// a-upload 的 custom-request 需同步返回 UploadRequest（{ abort }），异步逻辑在内部任务中执行
+const handleIconUpload = (option: RequestOption): UploadRequest => {
+  const { fileItem, onSuccess, onError } = option
+
+  const uploadTask = async () => {
+    try {
+      const uploadResp = await uploadImage(fileItem.file as File)
+      form.icon = uploadResp.data.image_url
+      onSuccess(uploadResp)
+    } catch (err) {
+      onError?.(err)
+      Message.error('图标上传失败')
+    }
+  }
+  uploadTask()
+
+  return { abort: () => {} }
+}
+</script>
+
+<template>
+  <a-spin
+    :loading="loading"
+    class="h-full w-full scrollbar-w-none overflow-scroll"
+    @scroll="handleScroll"
+  >
+    <a-row :gutter="[20, 20]" class="flex-1">
+      <!-- 有数据的UI状态（响应式：视口缩小自动换行 4/3/2/1 列） -->
+      <a-col
+        v-for="(provider, idx) in providers"
+        :key="provider.name"
+        :xs="24"
+        :sm="12"
+        :md="8"
+        :lg="6"
+        :xl="6"
+        :xxl="6"
+      >
+        <a-card hoverable class="cursor-pointer rounded-lg" @click="showIdx = idx">
+          <!-- 顶部提供商名称-->
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3">
+              <!-- 左侧图标（API 插件用自己的 icon；相对路径补 /api 前缀） -->
+              <a-avatar :size="40" shape="square" :image-url="providerIcon(provider)" />
+
+              <!-- 右侧工具信息-->
+              <div class="flex flex-col">
+                <div class="text-base text-gray-900 font-bold line-clamp-1">{{ provider.name }}</div>
+                <div class="text-xs text-gray-500 line-clamp-1">
+                  提供商 {{ provider.name }} * {{ provider.tools.length }} 插件
+                </div>
+              </div>
+            </div>
+            <!-- 操作按钮 -->
+            <a-dropdown position="br" @click.stop>
+              <a-button aria-label="更多操作" type="text" size="small" class="rounded-lg text-gray-700">
+                <template #icon>
+                  <icon-more />
+                </template>
+              </a-button>
+              <template #content>
+                <a-doption @click="handleDelete(provider.id)">删除</a-doption>
+              </template>
+            </a-dropdown>
+          </div>
+          <!-- 提供商的描述信息-->
+          <div class="leading-[18px] text-gray-500 h-[72px] line-clamp-4 mb-2">
+            {{ provider.description }}
+          </div>
+          <!-- 提供商的发布信息-->
+          <div class="flex items-center gap-1.5">
+            <a-avatar :size="18" class="bg-blue-700">
+              <icon-user />
+            </a-avatar>
+            <div class="text-xs text-gray-400">
+              DeepSeek · 编辑时间 {{ moment(provider.created_at).format('MM-DD HH:mm:ss') }}
+            </div>
+          </div>
+        </a-card>
+      </a-col>
+      <!-- 没数据的UI状态-->
+      <a-col v-if="providers.length === 0" :span="24">
+        <a-empty
+          description="没有可用的API插件"
+          class="h-[400px] flex flex-col items-center justify-center"
+        />
+      </a-col>
+    </a-row>
+    <!-- 加载器-->
+    <a-row v-if="paginator.total_page >= 2">
+      <!-- 加载数据中-->
+      <a-col v-if="paginator.current_page <= paginator.total_page" :span="24" class="text-center">
+        <a-space class="my-4">
+          <a-spin />
+          <div class="text-gray-400">加载中</div>
+        </a-space>
+      </a-col>
+      <!-- 数据加载完成-->
+      <a-col v-else :span="24" class="text-center">
+        <div class="text-gray-400 my-4">数据已全部加载</div>
+      </a-col>
+    </a-row>
+    <!-- 卡片抽屉-->
+    <a-drawer
+      :visible="showIdx != -1"
+      :width="350"
+      :footer="false"
+      title="工具详情"
+      :drawer-style="{ background: '#F9FAFB' }"
+      @cancel="showIdx = -1"
+    >
+      <!-- 外部容器，用于判断showIdx是否为-1，为-1的时候就不显示-->
+      <div v-if="showIdx != -1">
+        <!-- 顶部提供商名称-->
+        <div class="flex items-center gap-3 mb-3">
+          <!-- 左侧图标-->
+          <a-avatar :size="40" shape="square" :image-url="currentProvider.icon" />
+          <!-- 右侧工具信息-->
+          <div class="flex flex-col">
+            <div class="text-base text-gray-900 font-bold">
+              {{ currentProvider.name }}
+            </div>
+            <div class="text-xs text-gray-500 line-clamp-1">
+              提供商 {{ currentProvider.name }} * {{ currentProvider.tools.length }} 插件
+            </div>
+          </div>
+        </div>
+        <!-- 提供商的描述信息-->
+        <div class="leading-[18px] text-gray-500 mb-2">
+          {{ currentProvider.description }}
+        </div>
+        <!-- 编辑按钮-->
+        <a-button
+          :loading="showUpdateModalLoading"
+          type="dashed"
+          long
+          class="mb-2 rounded-lg"
+          @click="handleUpdate"
+        >
+          <template #icon>
+            <icon-settings />
+          </template>
+          编辑工具
+        </a-button>
+        <!-- 分隔符-->
+        <hr class="my-4" />
+        <!-- 提供者工具-->
+        <div class="flex flex-col gap-2">
+          <div class="=text-xs text-gray-500">
+            包含 {{ currentProvider.tools.length }} 个工具
+          </div>
+          <!-- 工具列表-->
+          <a-card
+            v-for="tool in currentProvider.tools"
+            :key="tool.name"
+            class="cursor-pointer flex flex-col rounded-xl"
+            :class="debugToolName === tool.name ? '!border-blue-500' : ''"
+            @click="selectDebugTool(tool.name)"
+          >
+            <!-- 工具名称 -->
+            <div class="font-bold text-gray-900 mb-2">{{ tool.name }}</div>
+            <!-- 工具描述-->
+            <div class="text-gray-500 text-xs">{{ tool.description }}</div>
+            <!-- 工具参数-->
+            <div v-if="tool.inputs.length > 0">
+              <!-- 分隔符-->
+              <div class="flex items-center gap-2 my-4">
+                <div class="text-xs font-bold text-gray-500">参数</div>
+                <hr class="flex-1" />
+              </div>
+              <!-- 参数列表-->
+              <div class="flex flex-col gap-4">
+                <div v-for="input in tool.inputs" :key="input.name" class="flex flex-col gap-2">
+                  <!-- 上半部分-->
+                  <div class="flex items-center gap-2 text-xs">
+                    <div class="text-gray-900 font-bold">{{ input.name }}</div>
+                    <div class="text-gray-500 font-bold">{{ typeMap[input.type] }}</div>
+                    <div v-if="input.required" class="text-red-700 font-bold">必填</div>
+                  </div>
+                  <!-- 参数描述信息-->
+                  <div class="text-xs text-gray-500">{{ input.description }}</div>
+                </div>
+              </div>
+            </div>
+          </a-card>
+
+          <!-- 调试面板（工具卡片列表下方） -->
+          <div
+            v-if="debugToolName"
+            class="rounded-lg border border-blue-200 bg-white p-3 shadow-sm"
+          >
+            <!-- 面板标题 -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-sm font-bold text-gray-900">调试接口</div>
+              <a-tag color="arcoblue" size="small">{{ debugToolName }}</a-tag>
+            </div>
+            <!-- 当前选中工具参数输入 -->
+            <template v-if="debugTool">
+              <div v-if="debugTool.inputs.length > 0" class="flex flex-col gap-2 mb-3">
+                <div
+                  v-for="input in debugTool.inputs"
+                  :key="input.name"
+                  class="flex flex-col gap-1"
+                >
+                  <div class="text-xs text-gray-600">
+                    {{ input.name }}<span v-if="input.required" class="text-red-600"> *</span>
+                  </div>
+                  <a-input
+                    v-if="input.type === 'str'"
+                    :model-value="getDebugArgs(debugTool!.name)[input.name] as string"
+                    @update:model-value="(v: string) => setDebugArg(debugTool!.name, input.name, v)"
+                    :placeholder="input.description || '请输入'"
+                    size="small"
+                  />
+                  <a-input-number
+                    v-else-if="input.type === 'int' || input.type === 'float'"
+                    :model-value="getDebugArgs(debugTool!.name)[input.name] as number"
+                    @update:model-value="(v: number | undefined) => setDebugArg(debugTool!.name, input.name, v)"
+                    :placeholder="input.description || '请输入'"
+                    size="small"
+                    class="w-full"
+                  />
+                  <a-select
+                    v-else-if="input.type === 'bool'"
+                    :model-value="getDebugArgBool(debugTool!.name, input.name)"
+                    @update:model-value="(v: unknown) => setDebugArg(debugTool!.name, input.name, v)"
+                    size="small"
+                    allow-clear
+                    :options="[
+                      { label: 'true', value: true },
+                      { label: 'false', value: false },
+                    ]"
+                  />
+                  <a-input
+                    v-else
+                    :model-value="getDebugArgs(debugTool!.name)[input.name] as string"
+                    @update:model-value="(v: string) => setDebugArg(debugTool!.name, input.name, v)"
+                    :placeholder="input.description || '请输入'"
+                    size="small"
+                  />
+                </div>
+              </div>
+              <div v-else class="text-xs text-gray-400 mb-3">该工具无参数，可直接运行</div>
+              <!-- 运行按钮 -->
+              <a-button
+                type="primary"
+                size="small"
+                :loading="debugLoading"
+                class="rounded-lg"
+                @click="runDebug(debugTool!)"
+              >
+                <template #icon><icon-play-arrow /></template>
+                运行
+              </a-button>
+            </template>
+            <!-- 结果展示（复用 openapi 的 CodeBlock 高亮） -->
+            <div v-if="debugResult[debugToolName]" class="mt-3">
+              <div class="text-xs font-bold text-gray-700 mb-1">返回结果</div>
+              <CodeBlock :code="debugResult[debugToolName] ?? ''" language="json" :max-height="245" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </a-drawer>
+    <!-- 新建/修改模态框-->
+    <a-modal
+      :width="'clamp(320px, 80vw, 850px)'"
+      :visible="props.createType === 'tool' || showUpdateModal"
+      hide-title
+      :footer="false"
+      modal-class="rounded-xl"
+      @cancel="handleCancel"
+    >
+      <!-- 顶部标题-->
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold text-gray-700">
+          {{ props.createType === 'tool' ? '新建' : '更新' }}插件
+        </div>
+        <a-button aria-label="关闭" @click="handleCancel" type="text" class="!text-gray-700" size="small">
+          <template #icon>
+            <icon-close />
+          </template>
+        </a-button>
+      </div>
+      <!-- 中间表单-->
+      <div class="pt-6">
+        <a-form ref="formRef" :model="form" @submit="handleSubmit" layout="vertical">
+          <a-form-item
+            field="icon"
+            hide-label
+            :rules="[{ required: true, message: '插件图标不能为空' }]"
+          >
+            <a-upload
+              v-model:file-list="form.fileList"
+              list-type="picture-card"
+              :limit="1"
+              image-preview
+              :custom-request="handleIconUpload"
+              :show-remove-button="true"
+            />
+          </a-form-item>
+          <a-form-item
+            field="name"
+            label="插件名称"
+            asterisk-position="end"
+            :rules="[{ required: true, message: '插件名称不能为空' }]"
+          >
+            <a-input
+              id="form-name"
+              name="form-name"
+              v-model="form.name"
+              placeholder="请输入插件名称，确保名称含义清晰"
+              show-word-limit
+              :max-length="60"
+            />
+          </a-form-item>
+          <a-form-item
+            field="openapi_schema"
+            label="OpenAPI Schema"
+            asterisk-position="end"
+            :rules="[{ required: true, message: 'OpenAPI Schema不能为空' }]"
+          >
+            <a-textarea
+              id="form-openapi_schema"
+              name="form-openapi_schema"
+              v-model="form.openapi_schema"
+              :auto-size="{ minRows: 4, maxRows: 6 }"
+              placeholder="在此处输入您的OpenAPI Schema"
+              @blur="
+                async () => {
+                  if (form.openapi_schema.trim() !== '') {
+                    await validateOpenAPISchema(form.openapi_schema)
+                  }
+                }
+              "
+            />
+          </a-form-item>
+          <a-form-item hide-label>
+            <!-- 可用工具表格-->
+            <div class="flex flex-col w-full">
+              <div class="w-full text-sm font-medium text-gray-700 mb-2">可用工具</div>
+              <div class="rounded-lg border border-gray-200 w-full overflow-x-auto">
+                <table class="w-full leading-[18px] text-xs text-gray-700 font-normal">
+                  <thead class="text-gray-500">
+                    <tr class="border-b border-gray-200">
+                      <th class="p-2 pl-3 font-medium">名称</th>
+                      <th class="p-2 pl-3 font-medium w-[236px]">描述</th>
+                      <th class="p-2 pl-3 font-medium">方法</th>
+                      <th class="p-2 pl-3 font-medium">路径</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(tool, idx) in tools"
+                      :key="idx"
+                      class="border-b last:border-0 border-gray-200 text-gray-700"
+                    >
+                      <td class="p-2 pl-3">{{ tool.name }}</td>
+                      <td class="p-2 pl-3 w-[236px]">{{ tool.description }}</td>
+                      <td class="p-2 pl-3">{{ tool.method }}</td>
+                      <td class="p-2 pl-3 w-[62px]">{{ tool.path }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </a-form-item>
+          <a-form-item hide-label>
+            <!-- 请求头表单-->
+            <div class="flex flex-col w-full">
+              <div class="w-full text-sm font-medium text-gray-700 mb-2">Headers</div>
+              <div class="rounded-lg border border-gray-200 w-full overflow-x-auto">
+              <table class="w-full leading-[18px] text-xs text-gray-700 font-normal mb-3">
+                <thead class="text-gray-500">
+                  <tr class="border-b border-gray-200">
+                    <th class="p-2 pl-3 font-medium">Key</th>
+                    <th class="p-2 pl-3 font-medium">Value</th>
+                    <th class="p-2 pl-3 font-medium w-[50px]">操作</th>
+                  </tr>
+                </thead>
+                <tbody v-if="form.headers.length > 0" class="border-b border-gray-200">
+                  <tr
+                    v-for="(header, idx) in form.headers"
+                    :key="idx"
+                    class="border-b last:border-0 border-gray-200"
+                  >
+                    <td class="p-2 pl-3">
+                      <a-form-item :field="`headers[${idx}].key`" hide-label class="m-0">
+                        <a-input
+                          id="form-key"
+                          name="form-key"
+                          v-model="header.key"
+                          placeholder="请输入请求头键名"
+                        />
+                      </a-form-item>
+                    </td>
+                    <td class="p-2 pl-3">
+                      <a-form-item :field="`headers[${idx}].value`" hide-label class="m-0">
+                        <a-input
+                          id="form-value"
+                          name="form-value"
+                          v-model="header.value"
+                          placeholder="请输入请求头键值内容"
+                        />
+                      </a-form-item>
+                    </td>
+                    <td class="p-2 pl-3">
+                      <a-button aria-label="删除"
+                        @click="form.headers.splice(idx, 1)"
+                        size="mini"
+                        type="text"
+                        class="!text-gray-700"
+                      >
+                        <template #icon>
+                          <icon-delete />
+                        </template>
+                      </a-button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <a-button
+                @click="form.headers.push({ key: '', value: '' })"
+                size="mini"
+                class="rounded ml-3 mb-3 !text-gray-700"
+              >
+                <template #icon>
+                  <icon-plus />
+                </template>
+                增加参数
+              </a-button>
+            </div>
+            </div>
+          </a-form-item>
+          <!-- 底部按钮-->
+          <div class="flex justify-end">
+            <a-space :size="16">
+              <a-button class="rounded-lg" @click="handleCancel">取消</a-button>
+              <a-button
+                :loading="submitLoading"
+                type="primary"
+                html-type="submit"
+                class="rounded-lg"
+                >保存</a-button
+              >
+            </a-space>
+          </div>
+        </a-form>
+      </div>
+    </a-modal>
+  </a-spin>
+</template>
+
+<style scoped>
+.text-center {
+  text-align: center;
+}
+</style>

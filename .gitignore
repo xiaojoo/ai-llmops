@@ -1,0 +1,37 @@
+.env
+.dsh/*
+.dsh/
+tmp/*
+storage/*
+.idea/*
+venv/*
+__pycache__
+.tmp/
+.tmp-*/
+.tmp-chrome-profile*/
+.tmp-edge-profile*/
+.webapp/
+scripts/_screenshots/
+scripts/_chat_history.md
+internal/core/embeddings/*/
+internal/core/ltp/*
+internal/core/rerank/*/
+internal/core/vector_store/
+天辰*.txt
+deploy/.env
+deploy/base/.runtime/
+deploy/base/.admin-key
+deploy/base/volumes/
+
+deploy/tencent-memory/
+*.env
+jenkins/.runtime/
+jenkins/.memory-admin-key
+jenkins/volumes/
+
+# LLM 官方分词器文件（与 internal/core/ltp 同口径：体积大、按需下载，不入库）
+# 缺失时相关 provider 不显示 token 量，不会退回 tiktoken
+internal/core/language_model/tokenizers/deepseek/*
+
+# Qwen3.5/3.6/3.8 官方词表（248,044+276），来源 Qwen/Qwen3.8-27B，不入库
+internal/core/language_model/tokenizers/qwen35/*

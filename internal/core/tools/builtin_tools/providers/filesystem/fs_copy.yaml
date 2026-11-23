@@ -1,0 +1,4 @@
+name: fs_copy
+label: 复制文件/目录
+description: 复制工作区内的文件或目录（目标父目录自动创建；目标已存在默认报错，可设 overwrite=true 覆盖），返回结构化 JSON。路径相对于工作区根目录（FILESYSTEM_WORKSPACE）。
+params: []

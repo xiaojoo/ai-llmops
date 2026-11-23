@@ -1,0 +1,27 @@
+model: qwen3.7-plus
+label: qwen3.7-plus
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 1000000
+max_output_tokens: 65536
+attributes:
+  model: qwen3.7-plus
+  # base_url / api_key 由 chat.py 读取 QWEN3_5_PLUS_API_BASE / QWEN3_5_PLUS_API_KEY（回退 DASHSCOPE_*）
+parameters:
+  - name: temperature
+    use_template: temperature
+  - name: top_p
+    use_template: top_p
+  - name: max_tokens
+    use_template: max_tokens
+    default: 8192
+    max: 65536
+metadata:
+  pricing:
+    input: 0.0020
+    output: 0.0080
+    unit: 0.001
+    currency: RMB

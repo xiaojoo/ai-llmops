@@ -1,0 +1,271 @@
+# ═════════════════════════════════════════════════════════════════════════
+# deploy 应用编排（对接 deploy/base 基础环境模式）
+#
+# db / redis / weaviate 由 deploy/base 基础环境提供（网络 base-net，服务名
+# db / redis / weaviate），本编排不再自建这三个服务；api/celery 通过环境
+# 变量 host（db / redis / weaviate）访问，SQLALCHEMY_DATABASE_URI 等值见
+# .env（模板 deploy/.env.example，host 已指向 base 服务名）。
+#
+# 独立部署（无 base 环境）时：取消下方 llmops-db / llmops-redis /
+# llmops-weaviate 三个服务的注释，并把文件底部网络声明的 external 去掉。
+# ═════════════════════════════════════════════════════════════════════════
+services:
+  llmops-web:
+    image: llmops-web:0.1.0
+    build:
+      # T13⑲：前端仓库实际位于仓库内 ai-llmops-web/（原 ../../llmops-web 指向仓库外，compose up 必失败）
+      context: ../ai-llmops-web
+      dockerfile: Dockerfile
+    container_name: llmops-web
+    restart: always
+    ports:
+      - "3000:80"
+  llmops-api:
+    image: llmops-api:0.1.0
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: llmops-api
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./volumes/app/storage:/app/storage
+      - /data/llmops/llmops-api/internal/core/embeddings/bge-small-zh:/llmops/internal/core/embeddings/bge-small-zh
+      - /data/llmops/llmops-api/internal/core/ltp:/llmops/internal/core/ltp
+    environment:
+      # 模式为API，代表启用API服务
+      MODE: ${MODE:-api}
+      SERVER_WORKER_AMOUNT: ${SERVER_WORKER_AMOUNT:-1}
+      SERVER_THREAD_AMOUNT: ${SERVER_THREAD_AMOUNT:-4}
+      # 数据库迁移配置
+      MIGRATION_ENABLED: ${MIGRATION_ENABLED:-true}
+      # JWT加密秘钥
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      WTF_CSRF_ENABLED: ${WTF_CSRF_ENABLED:-false}
+      # SQLAlchemy数据库配置
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI}
+      SQLALCHEMY_POOL_SIZE: ${SQLALCHEMY_POOL_SIZE:-30}
+      SQLALCHEMY_POOL_RECYCLE: ${SQLALCHEMY_POOL_RECYCLE:-3600}
+      SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-true}
+      # Redis缓存数据库配置
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_USERNAME: ${REDIS_USERNAME:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_USE_SSL: ${REDIS_USE_SSL:-false}
+      # Weaviate向量数据库配置
+      WEAVIATE_HTTP_HOST: ${WEAVIATE_HTTP_HOST:-weaviate}
+      WEAVIATE_HTTP_PORT: ${WEAVIATE_HTTP_PORT:-8080}
+      WEAVIATE_GRPC_HOST: ${WEAVIATE_GRPC_HOST:-weaviate}
+      WEAVIATE_GRPC_PORT: ${WEAVIATE_GRPC_PORT:-50051}
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY}
+      # 文件存储提供者（cos | miniio）
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-miniio}
+      MINIO_API_URL: ${MINIO_API_URL:-http://localhost:88/api}
+      MINIO_TIMEOUT: ${MINIO_TIMEOUT:-60}
+      # 腾讯COS
+      COS_SECRET_ID: ${COS_SECRET_ID:-}
+      COS_SECRET_KEY: ${COS_SECRET_KEY:-}
+      COS_REGION: ${COS_REGION:-ap-guangzhou}
+      COS_SCHEME: ${COS_SCHEME:-https}
+      COS_BUCKET: ${COS_BUCKET:-}
+      COS_DOMAIN: ${COS_DOMAIN:-}
+      # Celery配置
+      CELERY_BROKER_DB: ${CELERY_BROKER_DB:-1}
+      CELERY_RESULT_BACKEND_DB: ${CELERY_RESULT_BACKEND_DB:-1}
+      CELERY_TASK_IGNORE_RESULT: ${CELERY_TASK_IGNORE_RESULT:-true}
+      CELERY_RESULT_EXPIRES: ${CELERY_RESULT_EXPIRES:-3600}
+      CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP: ${CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP:-true}
+      # Github OAuth应用秘钥
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_CLIENT_REDIRECT_URI: ${GITHUB_CLIENT_REDIRECT_URI:-http://localhost:5173/auth/authorize/github}
+      # LangSmith配置
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-llmops}
+      # HuggingFace配置
+      TRANSFORMERS_OFFLINE: 1
+      # 高德天气
+      GAODE_API_KEY: ${GAODE_API_KEY:-}
+      # 辅助Agent智能体应用id标识
+      ASSISTANT_AGENT_ID: ${ASSISTANT_AGENT_ID:-}
+      # OpenAI服务提供者
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_API_BASE: ${OPENAI_API_BASE:-https://api.deepseek.com/v1}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_API_BASE: ${DEEPSEEK_API_BASE:-https://api.deepseek.com/v1}
+      # MOONSHOT API KEY服务提供者
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      MOONSHOT_API_BASE: ${MOONSHOT_API_BASE:-https://api.moonshot.cn}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      DASHSCOPE_API_BASE: ${DASHSCOPE_API_BASE:-https://dashscope.aliyuncs.com}
+      # 飞书机器人
+      FEISHU_APP_ID: ${FEISHU_APP_ID:-}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
+      LLMOPS_APP_ID: ${LLMOPS_APP_ID:-}
+      LLMOPS_ACCESS_TOKEN: ${LLMOPS_ACCESS_TOKEN:-}
+      # 配置加密主密钥（/settings 敏感配置 AES 加密用）
+      CONFIG_MASTER_KEY: ${CONFIG_MASTER_KEY:-}
+    ports:
+      - "5001:5001"
+    # db/redis/weaviate 由 base-net 基础环境提供，无启动顺序依赖
+  llmops-celery:
+    image: llmops-api:0.1.0
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: llmops-celery
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./volumes/app/storage:/app/storage
+      - /data/llmops/llmops-api/internal/core/embeddings/bge-small-zh:/llmops/internal/core/embeddings/bge-small-zh
+      - /data/llmops/llmops-api/internal/core/ltp:/llmops/internal/core/ltp
+    environment:
+      # 模式为celery，代表启用celery异步任务队列
+      MODE: ${MODE_CELERY:-celery}
+      CELERY_POOL: ${CELERY_POOL:-threads}
+      CELERY_WORKER_AMOUNT: ${CELERY_WORKER_AMOUNT:-4}
+      # 数据库迁移配置
+      MIGRATION_ENABLED: 'false'
+      # JWT加密秘钥
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # CSRF校验开关
+      WTF_CSRF_ENABLED: ${WTF_CSRF_ENABLED:-false}
+      # SQLAlchemy数据库配置
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI}
+      SQLALCHEMY_POOL_SIZE: ${SQLALCHEMY_POOL_SIZE:-30}
+      SQLALCHEMY_POOL_RECYCLE: ${SQLALCHEMY_POOL_RECYCLE:-3600}
+      SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-true}
+      # Redis缓存数据库配置
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_USERNAME: ${REDIS_USERNAME:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_USE_SSL: ${REDIS_USE_SSL:-false}
+      # Weaviate向量数据库配置
+      WEAVIATE_HTTP_HOST: ${WEAVIATE_HTTP_HOST:-weaviate}
+      WEAVIATE_HTTP_PORT: ${WEAVIATE_HTTP_PORT:-8080}
+      WEAVIATE_GRPC_HOST: ${WEAVIATE_GRPC_HOST:-weaviate}
+      WEAVIATE_GRPC_PORT: ${WEAVIATE_GRPC_PORT:-50051}
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY}
+      # 文件存储提供者（cos | miniio）
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-miniio}
+      MINIO_API_URL: ${MINIO_API_URL:-http://localhost:88/api}
+      MINIO_TIMEOUT: ${MINIO_TIMEOUT:-60}
+      # 腾讯COS
+      COS_SECRET_ID: ${COS_SECRET_ID:-}
+      COS_SECRET_KEY: ${COS_SECRET_KEY:-}
+      COS_REGION: ${COS_REGION:-ap-guangzhou}
+      COS_SCHEME: ${COS_SCHEME:-https}
+      COS_BUCKET: ${COS_BUCKET:-}
+      COS_DOMAIN: ${COS_DOMAIN:-}
+      # Celery配置
+      CELERY_BROKER_DB: ${CELERY_BROKER_DB:-1}
+      CELERY_RESULT_BACKEND_DB: ${CELERY_RESULT_BACKEND_DB:-1}
+      CELERY_TASK_IGNORE_RESULT: ${CELERY_TASK_IGNORE_RESULT:-true}
+      CELERY_RESULT_EXPIRES: ${CELERY_RESULT_EXPIRES:-3600}
+      CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP: ${CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP:-true}
+      # Github OAuth应用秘钥
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_CLIENT_REDIRECT_URI: ${GITHUB_CLIENT_REDIRECT_URI:-http://localhost:5173/auth/authorize/github}
+      # LangSmith配置
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-llmops}
+      # HuggingFace配置
+      TRANSFORMERS_OFFLINE: 1
+      # 高德天气
+      GAODE_API_KEY: ${GAODE_API_KEY:-}
+      # 辅助Agent智能体应用id标识
+      ASSISTANT_AGENT_ID: ${ASSISTANT_AGENT_ID:-}
+      # OpenAI服务提供者
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_API_BASE: ${OPENAI_API_BASE:-https://api.deepseek.com/v1}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_API_BASE: ${DEEPSEEK_API_BASE:-https://api.deepseek.com/v1}
+      # MOONSHOT API KEY服务提供者
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      MOONSHOT_API_BASE: ${MOONSHOT_API_BASE:-https://api.moonshot.cn}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      DASHSCOPE_API_BASE: ${DASHSCOPE_API_BASE:-https://dashscope.aliyuncs.com}
+      # 飞书机器人
+      FEISHU_APP_ID: ${FEISHU_APP_ID:-}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
+      LLMOPS_APP_ID: ${LLMOPS_APP_ID:-}
+      LLMOPS_ACCESS_TOKEN: ${LLMOPS_ACCESS_TOKEN:-}
+      # 配置加密主密钥（/settings 敏感配置 AES 加密用）
+      CONFIG_MASTER_KEY: ${CONFIG_MASTER_KEY:-}
+    # db/redis/weaviate 由 base-net 基础环境提供，无启动顺序依赖
+  # ── 以下三个服务由 deploy/base 基础环境提供，默认注释 ──
+  # 独立部署时取消注释，并去掉文件底部网络的 external 声明
+  # llmops-redis:
+  #   image: redis:6-alpine
+  #   container_name: llmops-redis
+  #   restart: always
+  #   command: redis-server --requirepass 123456
+  #   volumes:
+  #     - ./volumes/redis/data:/data
+  #   ports:
+  #     - "6379:6379"
+  # llmops-db:
+  #   image: postgres:15-alpine
+  #   container_name: llmops-db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: 123456
+  #     POSTGRES_DB: llmdb
+  #   volumes:
+  #     - ./volumes/db/data:/var/lib/postgresql/data
+  #     - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   ports:
+  #     - "5432:5432"
+  # llmops-weaviate:
+  #   image: semitechnologies/weaviate:1.28.4
+  #   container_name: llmops-weaviate
+  #   restart: always
+  #   environment:
+  #     QUERY_DEFAULTS_LIMIT: 25 #查询默认返回的数据条数
+  #     AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'false' # 需要授权才能和weaviate进行交互
+  #     PERSISTENCE_DATA_PATH: /var/lib/weaviate # weoviate数据存储路径
+  #     DEFAULT_VECTORIZER_MODULE: 'none' # 向量化模设置为none
+  #     CLUSTER_HOSTNAME: 'node1' # 节点的主机名字
+  #     AUTHENTICATION_APIKEY_ENABLED: 'true' # 启动基于API秘钥的身份校验
+  #     AUTHENTICATION_APIKEY_ALLOWED_KEYS: '${WEAVIATE_API_KEY}' # 允许的API秘钥
+  #     AUTHENTICATION_APIKEY_USERS: 'llmops@llmops.com' # 基于秘钥的API身份列表
+  #     AUTHORIZATION_ADMINLIST_ENABLED: 'true' # 启动AdminList授权方案
+  #     AUTHORIZATION_ADMINLIST_USERS: 'llmops@llmops.com' # 使用AdminList方案时具有管理权限的用户
+  #   volumes:
+  #     - ./volumes/weaviate:/var/lib/weaviate
+  #   ports:
+  #     - "8080:8080"
+  #     - "50051:50051"
+  llmops-nginx:
+    image: nginx:latest
+    container_name: llmops-nginx
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/proxy.conf:/etc/nginx/proxy.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+    depends_on:
+      - llmops-web
+      - llmops-api
+
+# 加入 deploy/base 基础环境网络（db/redis/weaviate/memory-core 在此网络中）
+# 独立部署时删除 external 并移除本段（使用默认网络自建 db/redis/weaviate）
+networks:
+  default:
+    name: base-net
+    external: true
