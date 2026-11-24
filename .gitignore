@@ -35,3 +35,10 @@ internal/core/language_model/tokenizers/deepseek/*
 
 # Qwen3.5/3.6/3.8 官方词表（248,044+276），来源 Qwen/Qwen3.8-27B，不入库
 internal/core/language_model/tokenizers/qwen35/*
+
+Obsidian/
+.superpowers/
+superpowers/
+scripts/install-obsidian-plugins.ps1
+scripts/dual_time_demo.txt
+scripts/window_demo.txt
