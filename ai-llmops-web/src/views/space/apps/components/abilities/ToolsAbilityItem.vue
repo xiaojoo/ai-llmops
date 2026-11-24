@@ -396,7 +396,7 @@ const isToolSelected = (provider: unknown, tool: unknown) => {
             <a-avatar
               :size="36"
               shape="square"
-              class="rounded flex-shrink-0"
+              class="rounded shrink-0"
               :style="{ backgroundColor: 'transparent' }"
               :image-url="`${apiPrefix}/builtin_tools/${tool.provider.name}/icon`"
             />
@@ -411,7 +411,7 @@ const isToolSelected = (provider: unknown, tool: unknown) => {
             </div>
           </div>
           <!-- 右侧按钮 -->
-          <div class="hidden group-hover:flex items-center gap-1 flex-shrink-0 ml-2">
+          <div class="hidden group-hover:flex items-center gap-1 shrink-0 ml-2">
             <a-button
               :loading="getApiToolLoading || getBuiltinToolLoading"
               size="mini"
@@ -612,7 +612,7 @@ const isToolSelected = (provider: unknown, tool: unknown) => {
       <div class="flex w-full h-full">
         <!-- 左侧导航菜单 -->
         <div
-          class="flex flex-col flex-shrink-0 bg-gray-50 w-[200px] h-full px-3 py-4 overflow-scroll scrollbar-w-none"
+          class="flex flex-col shrink-0 bg-gray-50 w-[200px] h-full px-3 py-4 overflow-scroll scrollbar-w-none"
         >
           <!-- 标题 -->
           <div class="text-gray-900 font-bold text-lg mb-4">添加插件</div>
@@ -736,7 +736,7 @@ const isToolSelected = (provider: unknown, tool: unknown) => {
                   <!-- 添加按钮 -->
                   <a-button
                     size="mini"
-                    class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 flex-shrink-0"
+                    class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 shrink-0"
                     @click="() => handleSelectTool(Number(builtin_tool_idx), Number(tool_idx))"
                   >
                     <template #icon>
@@ -785,7 +785,7 @@ const isToolSelected = (provider: unknown, tool: unknown) => {
                   </div>
                 </div>
                 <!-- 操作按钮：固定显示在行右侧（仅删除图标） -->
-                <div class="flex items-center flex-shrink-0 ml-1">
+                <div class="flex items-center shrink-0 ml-1">
                   <a-button
                     aria-label="移除"
                     size="mini"
@@ -843,7 +843,7 @@ const isToolSelected = (provider: unknown, tool: unknown) => {
                     <!-- 添加按钮 -->
                     <a-button
                       size="mini"
-                      class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 flex-shrink-0"
+                      class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 shrink-0"
                       @click="() => handleSelectTool(Number(api_tool_provider_idx), Number(tool_idx))"
                     >
                       <template #icon>

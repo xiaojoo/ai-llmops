@@ -10,7 +10,7 @@ import ParticleText from '@/components/ParticleText.vue'
   <div class="flex h-screen bg-white">
     <!-- 顶部logo（量子图标 + 粒子文字动画，与 home 页一致） -->
     <div class="fixed top-5 left-[22px] z-50 flex items-center gap-2">
-      <tech-logo :size="40" class="flex-shrink-0" />
+      <tech-logo :size="40" class="shrink-0" />
       <div class="w-[300px] md:w-[400px] h-10 overflow-hidden">
         <particle-text
           text="Quantum Computing"

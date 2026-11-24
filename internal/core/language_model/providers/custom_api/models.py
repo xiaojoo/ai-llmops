@@ -12,11 +12,10 @@ ALL_PROTOCOLS = {MODEL_PROTOCOL_OPENAI, MODEL_PROTOCOL_RESPONSES, MODEL_PROTOCOL
 
 
 def _master_key() -> bytes:
-    """获取加密主密钥（32 字节）：CONFIG_MASTER_KEY 优先，回退 JWT_SECRET_KEY，再回退默认。
-
-    与 custom_llm_model_service._master_key 保持一致（避免 core -> service 循环导入）。
-    """
-    secret = os.getenv("CONFIG_MASTER_KEY") or os.getenv("JWT_SECRET_KEY") or "llmops-default-master-key"
+    """获取加密主密钥（32 字节）：CONFIG_MASTER_KEY 优先，回退 JWT_SECRET_KEY。"""
+    secret = os.getenv("CONFIG_MASTER_KEY") or os.getenv("JWT_SECRET_KEY")
+    if not secret:
+        raise RuntimeError("CONFIG_MASTER_KEY 或 JWT_SECRET_KEY 至少配置一个")
     return build_master_key(secret)
 
 

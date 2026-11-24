@@ -44,7 +44,7 @@ onMounted(async () => await loadApp(String(route.params?.app_id)))
         </router-link>
         <!-- 应用图标与信息（窄视口下整块隐藏，优先保证右侧操作按钮可见） -->
         <div class="ab-top-info flex items-center gap-3 min-w-0">
-          <a-avatar :size="40" shape="square" class="rounded-lg flex-shrink-0" :image-url="app?.icon" />
+          <a-avatar :size="40" shape="square" class="rounded-lg shrink-0" :image-url="app?.icon" />
           <div class="flex flex-col justify-between h-[40px] min-w-0">
             <a-skeleton-line v-if="loading" :widths="[100]" />
             <div v-else class="ab-brand-name">{{ app?.name }}</div>
@@ -97,7 +97,7 @@ onMounted(async () => await loadApp(String(route.params?.app_id)))
         <a-button
           aria-label="发布历史"
           :disabled="loading"
-          class="!rounded-lg !w-9 !h-9 !text-[#344054]"
+          class="!rounded-lg !w-9 !h-9 text-[#344054]!"
           @click="publishHistoryDrawerVisible = true"
         >
           <template #icon>

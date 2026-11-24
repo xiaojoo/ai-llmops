@@ -193,7 +193,7 @@ onMounted(fetchFiles)
           class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
         >
           <!-- 文件图标 -->
-          <div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center shrink-0">
             <component :is="getFileIcon(file.name)" class="text-blue-500 text-sm" />
           </div>
 

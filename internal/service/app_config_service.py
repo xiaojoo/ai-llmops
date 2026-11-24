@@ -4,6 +4,8 @@
 @Author  : sunxiaojie
 @File    : app_config_service.py
 """
+import ast
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +23,8 @@ from internal.core.request_context import get_request_context
 from internal.core.tools.api_tools.entities import ToolEntity
 from internal.core.tools.api_tools.providers import ApiProviderManager
 from internal.core.tools.builtin_tools.providers import BuiltinProviderManager
+from internal.core.tools.mcp_client import MCPClientManager
+from internal.core.tools.tool_gateway import ToolGateway
 from internal.core.workflow import Workflow as WorkflowTool
 from internal.core.workflow.entities.workflow_entity import WorkflowConfig
 from internal.entity.app_entity import AppConfigType, DEFAULT_APP_CONFIG
@@ -221,6 +225,7 @@ class AppConfigService(BaseService):
                         )
                     )
 
+        tools.extend(await MCPClientManager.discover_tools(account_id=account_id))
         return tools
 
     async def get_langchain_tools_by_workflow_ids(
@@ -316,21 +321,17 @@ class AppConfigService(BaseService):
         else:
             tool_description = skill_description
 
-        # 检测是否存在 tools/子目录下的脚本入口
-        script_runner = None
+        # 技能脚本只在独立子进程中执行，禁止在主 API 进程 import 用户上传代码。
+        script_path = None
         tools_dir = cache_dir / "tools"
         if tools_dir.exists():
-            import importlib.util
-            for py_file in tools_dir.glob("*.py"):
-                spec = importlib.util.spec_from_file_location(
-                    f"skill_{skill_name}_{py_file.stem}", py_file
-                )
-                mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(mod)
-
-                # 找到包含 run() 函数的脚本作为入口
-                if hasattr(mod, "run"):
-                    script_runner = mod.run
+            for py_file in sorted(tools_dir.glob("*.py")):
+                try:
+                    tree = ast.parse(py_file.read_text(encoding="utf-8"))
+                except (OSError, UnicodeDecodeError, SyntaxError):
+                    continue
+                if any(isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == "run" for node in tree.body):
+                    script_path = py_file
                     break
 
         # load_language_model 为 async 方法，需 await 获取模型实例
@@ -339,8 +340,14 @@ class AppConfigService(BaseService):
         tool_call_name = re.sub(r"[^a-zA-Z0-9_]", "_", str(skill_name))
 
         def skill_tool_func(query: str) -> str:
-            if script_runner is not None and callable(script_runner):
-                return script_runner(query)
+            if script_path is not None:
+                if os.getenv("SKILL_EXECUTABLE_ENABLED", "false").lower() != "true":
+                    return "可执行技能未启用：管理员需显式设置 SKILL_EXECUTABLE_ENABLED=true"
+                return ToolGateway.skill(
+                    script_path,
+                    query,
+                    timeout=int(os.getenv("SKILL_TOOL_TIMEOUT", "60")),
+                )
 
             if not skill_content:
                 return f"skills {skill_name} 没有可用的文档内容"

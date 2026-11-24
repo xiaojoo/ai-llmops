@@ -350,7 +350,7 @@ watch(
     <div class="flex items-center justify-between gap-3 mb-2">
       <!-- 左侧标题 -->
       <div class="flex items-center gap-1 flex-1">
-        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg flex-shrink-0">
+        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg shrink-0">
           <icon-home />
         </a-avatar>
         <a-input
@@ -363,7 +363,7 @@ watch(
       <a-button
         type="text"
         size="mini"
-        class="!text-gray-700 flex-shrink-0"
+        class="!text-gray-700 shrink-0"
         @click="() => emits('update:visible', false)"
       >
         <template #icon>
@@ -415,7 +415,7 @@ watch(
               <a-avatar
                 :size="36"
                 shape="square"
-                class="rounded flex-shrink-0"
+                class="rounded shrink-0"
                 :image-url="form?.tool?.provider?.icon"
               />
               <!-- 名称与描述信息 -->
@@ -460,13 +460,13 @@ watch(
           <div class="w-[45%]">值</div>
         </div>
         <div v-for="(input, idx) in form?.inputs" :key="idx" class="flex items-center gap-1">
-          <div class="w-[30%] flex-shrink-0">
+          <div class="w-[30%] shrink-0">
             <div class="flex items-center gap-1 text-xs text-gray-500">
               <div class="">{{ input.name }}</div>
               <div class="text-gray-500 bg-gray-200 px-1 py-0.5 rounded">{{ input.type }}</div>
             </div>
           </div>
-          <div class="w-[25%] flex-shrink-0">
+          <div class="w-[25%] shrink-0">
             <a-select
               size="mini"
               v-model="input.type"
@@ -480,7 +480,7 @@ watch(
               ]"
             />
           </div>
-          <div class="w-[45%] flex-shrink-0 flex items-center gap-1">
+          <div class="w-[45%] shrink-0 flex items-center gap-1">
             <a-input
               v-if="input.type !== 'ref'"
               size="mini"
@@ -522,12 +522,12 @@ watch(
           <div class="w-[80%]">值</div>
         </div>
         <div v-for="(param, idx) in form?.params" :key="idx" class="flex items-center gap-1">
-          <div class="w-[20%] flex-shrink-0">
+          <div class="w-[20%] shrink-0">
             <div class="flex items-center gap-1 text-xs text-gray-500">
               <div class="">{{ param.key }}</div>
             </div>
           </div>
-          <div class="w-[80%] flex-shrink-0">
+          <div class="w-[80%] shrink-0">
             <a-input
               size="mini"
               :model-value="String(param.value ?? '')"
@@ -579,7 +579,7 @@ watch(
       <div class="flex w-full h-full">
         <!-- 左侧导航菜单 -->
         <div
-          class="flex flex-col flex-shrink-0 bg-gray-50 w-[200px] h-full px-3 py-4 overflow-scroll scrollbar-w-none"
+          class="flex flex-col shrink-0 bg-gray-50 w-[200px] h-full px-3 py-4 overflow-scroll scrollbar-w-none"
         >
           <!-- 标题 -->
           <div class="text-gray-900 font-bold text-lg mb-4">关联插件</div>
@@ -680,7 +680,7 @@ watch(
                   <a-button
                     v-if="!isToolSelected(builtin_tool, tool)"
                     size="mini"
-                    class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 flex-shrink-0"
+                    class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 shrink-0"
                     @click="handleSelectTool(Number(builtin_tool_idx), Number(tool_idx))"
                   >
                     <template #icon>
@@ -728,7 +728,7 @@ watch(
                     <a-button
                       v-if="!isToolSelected(api_tool_provider, tool)"
                       size="mini"
-                      class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 flex-shrink-0"
+                      class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded px-1.5 shrink-0"
                       @click="() => handleSelectTool(Number(api_tool_provider_idx), Number(tool_idx))"
                     >
                       <template #icon>
@@ -772,9 +772,10 @@ watch(
 </template>
 
 <style>
+@reference "../../../../../assets/styles/index.css";
 #tool-node-info {
   .arco-textarea {
-    @apply !text-xs;
+    @apply text-xs!;
   }
 }
 

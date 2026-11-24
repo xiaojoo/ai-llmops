@@ -124,13 +124,13 @@ const handleSubmit = async () => {
         ></textarea>
         <!-- AI 优化分析 -->
         <div v-if="optimize_prompt" class="ab-optimize-result">
-          <b class="!text-[#344054]">✦ AI 优化分析</b>
+          <b class="text-[#344054]!">✦ AI 优化分析</b>
           <div class="whitespace-pre-line text-[#667085] leading-relaxed mt-1">
             {{ optimize_prompt }}
           </div>
         </div>
         <div v-else class="ab-optimize-result">
-          <b class="!text-[#344054]">✦ AI 优化分析</b>
+          <b class="text-[#344054]!">✦ AI 优化分析</b>
           <p class="text-[#98a2b3] mt-1">
             输入优化目标后，点击右下角「AI 优化」，结果将展示在这里。
           </p>

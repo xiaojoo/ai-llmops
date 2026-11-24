@@ -25,7 +25,7 @@ onBeforeRouteLeave(() => {
 
 <template>
   <div class="flex-1 w-full min-h-0 h-full bg-white flex flex-col overflow-hidden">
-    <div class="mx-6 mt-4 border border-gray-200 rounded-lg bg-white flex-shrink-0 overflow-hidden">
+    <div class="mx-6 mt-4 border border-gray-200 rounded-lg bg-white shrink-0 overflow-hidden">
       <div class="flex items-center justify-between h-14 px-4 border-b border-gray-100">
         <div>
           <span class="text-sm font-medium text-gray-700">ChromaDB</span>

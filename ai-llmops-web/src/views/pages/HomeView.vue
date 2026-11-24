@@ -567,7 +567,7 @@ onMounted(async () => {
   <div class="h-full rounded-lg pt-2 bg-cover bg-no-repeat bg-center" @wheel="handleWheelForward">
     <div class="h-full flex flex-col">
       <!-- 页面标题栏 -->
-      <div class="flex items-center h-16 px-6 flex-shrink-0 bg-white">
+      <div class="flex items-center h-16 px-6 shrink-0 bg-white">
         <div class="text-base font-semibold text-gray-700">Agent Robot 智能管家</div>
       </div>
       <!-- 对话区域：空状态 + 输入框整体居中（对齐 web-apps 样式）；有消息时列表滚动、输入框贴底 -->
@@ -640,7 +640,7 @@ onMounted(async () => {
         <!-- 停止按钮 -->
         <div
           v-if="assistantAgentChatLoading"
-          class="h-[50px] flex items-center justify-center flex-shrink-0"
+          class="h-[50px] flex items-center justify-center shrink-0"
         >
           <a-button
             :loading="stopAssistantAgentChatLoading"
@@ -679,7 +679,7 @@ onMounted(async () => {
           </div>
         </div>
         <!-- 输入框区域 -->
-        <div class="w-full flex flex-col flex-shrink-0 transition-all duration-300">
+        <div class="w-full flex flex-col shrink-0 transition-all duration-300">
           <div class="w-full max-w-[976px] mx-auto px-6">
             <chat-input-bar
               v-model="query"

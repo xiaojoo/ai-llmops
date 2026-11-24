@@ -867,7 +867,7 @@ onMounted(async () => {
       </div>
     </template>
     <!-- 对话输入框 -->
-    <div class="w-full flex flex-col flex-shrink-0 bg-white">
+    <div class="w-full flex flex-col shrink-0 bg-white">
       <!-- 输入栏（清空按钮 + 输入框 + 免责声明，共用组件） -->
       <chat-input-bar
         class="px-6 pt-2"

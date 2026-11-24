@@ -188,7 +188,7 @@ onMounted(() => fetchVectors(1))
       <div class="flex items-center gap-2">
         <a-button
           size="small"
-          class="!hidden md:!inline-flex"
+          class="hidden! md:!inline-flex"
           :disabled="loadingVectors"
           @click="fetchVectors()"
         >
@@ -227,7 +227,7 @@ onMounted(() => fetchVectors(1))
               <span class="text-xs font-mono font-medium text-blue-600 truncate max-w-[200px]">{{
                 item.id
               }}</span>
-              <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0"
+              <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0"
                 >{{ item.embedding_dims }}维</span
               >
             </div>
@@ -236,7 +236,7 @@ onMounted(() => fetchVectors(1))
               [{{ item.embedding_preview.join(', ') }}{{ item.embedding_dims > 8 ? ', ...' : '' }}]
             </div>
           </div>
-          <div class="flex gap-1 flex-shrink-0 self-center">
+          <div class="flex gap-1 shrink-0 self-center">
             <a-tooltip content="详情">
               <a-button
                 size="mini"
@@ -273,7 +273,7 @@ onMounted(() => fetchVectors(1))
     <!-- 分页：固定不参与滚动 -->
     <div
       v-if="vectorPaginator.total_pages > 1"
-      class="flex justify-end flex-shrink-0 border border-gray-200 rounded-lg bg-white px-4 py-2"
+      class="flex justify-end shrink-0 border border-gray-200 rounded-lg bg-white px-4 py-2"
     >
       <a-pagination
         :total="vectorPaginator.total_count"
@@ -298,7 +298,7 @@ onMounted(() => fetchVectors(1))
     >
       <div class="flex flex-col gap-3 h-[520px]">
         <div class="flex flex-col gap-1 flex-1 min-h-0">
-          <label class="text-xs text-gray-600 font-medium flex-shrink-0" for="vector-content"
+          <label class="text-xs text-gray-600 font-medium shrink-0" for="vector-content"
             >内容 <span class="text-red-500">*</span></label
           >
           <a-textarea
@@ -308,7 +308,7 @@ onMounted(() => fetchVectors(1))
             :textarea-attrs="{ id: 'vector-content' }"
           />
         </div>
-        <div class="flex flex-col gap-1 flex-shrink-0">
+        <div class="flex flex-col gap-1 shrink-0">
           <label class="text-xs text-gray-600 font-medium" for="vector-metadata">Metadata（JSON）</label>
           <a-textarea
             v-model="vectorForm.metadata"
@@ -329,15 +329,15 @@ onMounted(() => fetchVectors(1))
     >
       <div v-if="detailItem" class="flex flex-col gap-3 text-sm">
         <div class="flex gap-2 items-center">
-          <span class="text-gray-400 w-20 flex-shrink-0">ID</span>
+          <span class="text-gray-400 w-20 shrink-0">ID</span>
           <span class="font-mono text-blue-600">{{ detailItem.id }}</span>
         </div>
         <div class="flex gap-2 items-center">
-          <span class="text-gray-400 w-20 flex-shrink-0">维度</span>
+          <span class="text-gray-400 w-20 shrink-0">维度</span>
           <span>{{ detailItem.embedding_dims }}</span>
         </div>
         <div class="flex gap-2">
-          <span class="text-gray-400 w-20 flex-shrink-0">Metadata</span>
+          <span class="text-gray-400 w-20 shrink-0">Metadata</span>
           <pre class="text-xs bg-gray-50 rounded p-2 flex-1 overflow-auto">
             {{ JSON.stringify(detailItem.metadata, null, 2) }}
           </pre>
@@ -402,7 +402,7 @@ onMounted(() => fetchVectors(1))
           >
             <div class="flex items-center justify-between mb-1">
               <span class="font-mono text-blue-600 truncate">{{ r.id }}</span>
-              <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+              <div class="flex items-center gap-2 shrink-0 ml-2">
                 <span class="text-gray-500">距离 {{ r.score }}</span>
                 <span
                   class="px-1.5 py-0.5 rounded"

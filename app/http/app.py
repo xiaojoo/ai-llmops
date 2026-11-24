@@ -33,6 +33,8 @@ from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.exc import SQLAlchemyError
 
 from internal.config.settings import get_settings
+from internal.core.agent.checkpoint import close_checkpoint_store, init_checkpoint_store
+from internal.core.telemetry import TelemetryMiddleware, init_telemetry, shutdown_telemetry
 from internal.exception import CustomException
 from internal.extensions.logging import init_logging
 from internal.extensions.redis import init_redis
@@ -100,6 +102,8 @@ async def lifespan(app: FastAPI):
     init_logging()
     init_redis()
     init_weaviate()
+    init_checkpoint_store()
+    init_telemetry()
 
     # 5. 建表（非 celery/local 模式）
     # 表已存在时跳过 create_all：默认 checkfirst=True 会对元数据里每张表各发一次
@@ -120,9 +124,30 @@ async def lifespan(app: FastAPI):
     from internal.router.router import register_routes_from_container
     register_routes_from_container(app=app)
 
-    yield
+    mcp_app = None
+    if settings.mcp_server_enabled:
+        from urllib.parse import urlsplit
 
-    await engine.dispose()
+        from internal.core.mcp_server import create_mcp_server
+
+        mcp_server = create_mcp_server()
+        mcp_app = mcp_server.streamable_http_app(
+            streamable_http_path="/",
+            stateless_http=True,
+            host=urlsplit(settings.mcp_public_url).hostname or "127.0.0.1",
+        )
+        app.mount("/mcp", mcp_app)
+
+    try:
+        if mcp_app is None:
+            yield
+        else:
+            async with mcp_app.router.lifespan_context(app):
+                yield
+    finally:
+        close_checkpoint_store()
+        shutdown_telemetry()
+        await engine.dispose()
 
 
 # ---- request_context_dependency 挂 app 级（所有路由生效） ----
@@ -136,12 +161,18 @@ app = FastAPI(
     lifespan=lifespan,
     dependencies=[Depends(request_context_dependency)],
 )
+app.add_middleware(TelemetryMiddleware)
 
 
-# ---- CORS（与旧 flask_cors 配置完全一致） ----
+# ---- CORS ----
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],

@@ -26,9 +26,13 @@ from internal.core.agent.agents import (
 )
 from internal.core.agent.entities.agent_entity import AgentConfig, create_ask_user_tool
 from internal.core.agent.entities.queue_entity import AgentThought, QueueEvent
+from internal.core.agent.checkpoint import get_checkpoint_store
+from internal.core.agent.run_context import RunContext
+from internal.core.telemetry import current_trace_id, current_traceparent
 from internal.core.language_model.entities.model_entity import BaseLanguageModel, ModelFeature
 from internal.entity.conversation_entity import InvokeFrom
 from internal.entity.dataset_entity import RetrievalSource
+from internal.exception import ForbiddenException, ValidateException
 from internal.memory.token_buffer_memory import TokenBufferMemory
 from internal.model import Account, AgentRun, App, Conversation, Message
 
@@ -193,7 +197,7 @@ def agent_thought_to_sse_frame(
             "event", "thought", "observation", "tool", "tool_input", "answer", "latency",
             "total_token_count", "total_price", "sub_task_id", "sub_task_title", "trace",
             "question", "options", "allow_custom", "choice", "sub_task_options",
-            "model_name", "llm_output", "tool_calls", "tool_call_id",
+            "model_name", "llm_output", "tool_calls", "tool_call_id", "trace_id",
         }),
         "id": str(agent_thought.id),
         "conversation_id": conversation_id,
@@ -442,6 +446,19 @@ class ChatRunner(BaseService):
         deduped.reverse()
         tools = deduped
 
+        run_id = uuid4()
+        checkpoint_store = get_checkpoint_store()
+        checkpoint_thread_id = await self._resolve_checkpoint_thread_id(message, conversation, account)
+        if checkpoint_store is not None and getattr(message, "resume_trigger", False) is not True:
+            checkpoint_store.delete_thread(checkpoint_thread_id)
+        run_context = RunContext(
+            run_id=run_id,
+            task_id=run_id,
+            thread_id=checkpoint_thread_id,
+            trace_id=current_trace_id(),
+            traceparent=current_traceparent(),
+        )
+
         agent = agent_class(
             name="debug-agent",
             llm=llm,
@@ -456,6 +473,8 @@ class ChatRunner(BaseService):
                 orchestrator_config=orchestrator_cfg,
                 local_tool_runtime=local_tool_runtime,
             ),
+            checkpointer=checkpoint_store.saver if checkpoint_store is not None else None,
+            run_context=run_context,
         )
 
         # 5、流式推理 + 事件序列化 + 异常兜底 + 落库
@@ -467,7 +486,6 @@ class ChatRunner(BaseService):
         # 顶层 run_id = 本次会话推理的唯一标识（编排器下即"父任务"task_id）。
         # 用于：插件"主动停止"按钮 — 停止该 run_id 会经编排器 monitor_stop 级联中止所有子任务；
         # 与工具结果回传用的 task_id（可能是子任务 id）区分开。
-        run_id = uuid4()
         # run 实体落库：run_id / message / conversation / account 关系 + version（防丢、审计、
         # message.status 投影的权威来源）。失败仅记日志，绝不阻断对话主链路。
         await self._record_run_start(
@@ -497,6 +515,26 @@ class ChatRunner(BaseService):
         ):
             yield event
 
+    async def _resolve_checkpoint_thread_id(
+        self,
+        message: Message,
+        conversation: Conversation,
+        account: Account,
+    ) -> str:
+        resume_message_id = getattr(message, "resume_message_id", None)
+        if getattr(message, "resume_trigger", False) is not True:
+            return str(message.id)
+        if not resume_message_id:
+            raise ValidateException("断点续跑必须提供 resume_message_id")
+        original = await self.db.get(Message, resume_message_id)
+        if (
+            original is None
+            or original.conversation_id != conversation.id
+            or original.created_by != account.id
+        ):
+            raise ForbiddenException("断点消息不存在或不属于当前会话/用户")
+        return str(original.id)
+
     async def _record_run_start(
             self,
             *,
@@ -521,7 +559,7 @@ class ChatRunner(BaseService):
                 account_id=account.id,
                 invoke_from=invoke_from,
                 agent_type=agent_type,
-                resume_trigger=bool(getattr(message, "resume_trigger", False)),
+                resume_trigger=getattr(message, "resume_trigger", False) is True,
             )
         except Exception:
             logger.exception("记录 run 开始失败 run_id=%s（不影响对话）", run_id)
@@ -815,7 +853,8 @@ class ChatRunner(BaseService):
                 "message_id": message.id,
                 # 编排型 Agent 从 query 重建人类消息，需传富化后的 query（含附件内容）
                 "query": llm_query,
-                "resume_trigger": bool(getattr(message, "resume_trigger", False)),
+                "resume": getattr(message, "resume_trigger", False) is True and not isinstance(agent, OrchestratorAgent),
+                "resume_trigger": getattr(message, "resume_trigger", False) is True,
                 # 断点续跑时原始消息 id（断点按 message_id 定位；编排器用它读/写断点）
                 "resume_message_id": getattr(message, "resume_message_id", None),
                 # 顶层 task_id 固定为本次 run_id（编排器下即父任务 id），保证 SSE run_id 稳定、可停止

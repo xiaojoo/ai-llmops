@@ -255,7 +255,7 @@ defineExpose({ openToolInfoByName })
         aria-label="收起应用结构"
         size="mini"
         type="text"
-        class="!text-[#98a2b3] ml-auto"
+        class="text-[#98a2b3]! ml-auto"
         @click="emits('collapse-toggle')"
       >
         <template #icon>
@@ -286,7 +286,7 @@ defineExpose({ openToolInfoByName })
           v-if="item.switch"
           size="small"
           type="round"
-          class="ml-auto flex-shrink-0"
+          class="ml-auto shrink-0"
           :model-value="switchModelValue(item)"
           @click.stop
           @update:model-value="(v: string | number | boolean) => onToggleSwitch(item, v)"
@@ -316,7 +316,7 @@ defineExpose({ openToolInfoByName })
           v-if="item.switch"
           size="small"
           type="round"
-          class="ml-auto flex-shrink-0"
+          class="ml-auto shrink-0"
           :model-value="switchModelValue(item)"
           @click.stop
           @update:model-value="(v: string | number | boolean) => onToggleSwitch(item, v)"

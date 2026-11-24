@@ -42,6 +42,7 @@ from internal.core.agent.entities.agent_entity import (
 from internal.core.agent.entities.queue_entity import AgentThought, QueueEvent
 from internal.core.tools.workspace_tools import LOCAL_TOOL_NAMES
 from internal.core.language_model.entities.model_entity import ModelFeature
+from internal.core.telemetry import invoke_tool, traced_llm_stream
 from internal.exception import FailedException
 
 # XML 工具调用标签关键词（Anthropic 风格：<tool_calls><invoke name=...><parameter name=...>）
@@ -139,7 +140,7 @@ class FunctionCallAgent(BaseAgent):
         graph.add_conditional_edges("llm", self._tools_condition)
         graph.add_edge("tools", "llm")
 
-        return graph.compile()
+        return graph.compile(checkpointer=self._checkpointer)
 
     def _preset_operation_node(self, state: AgentState) -> AgentState:
         """预设操作，涵盖：输入审核、数据预处理、条件边等"""
@@ -292,7 +293,7 @@ class FunctionCallAgent(BaseAgent):
         in_xml_section = False
 
         try:
-            for chunk in llm.stream(input_messages):
+            for chunk in traced_llm_stream(llm, input_messages):
                 if is_first_chunk:
                     gathered = chunk
                     is_first_chunk = False
@@ -512,7 +513,7 @@ class FunctionCallAgent(BaseAgent):
         is_first_chunk = True
         try:
             # 2、用未绑定工具的原始 llm 流式生成最终回答
-            for chunk in self.llm.stream(input_messages):
+            for chunk in traced_llm_stream(self.llm, input_messages):
                 if is_first_chunk:
                     gathered = chunk
                     is_first_chunk = False
@@ -627,7 +628,7 @@ class FunctionCallAgent(BaseAgent):
                             tool_call["name"], self.agent_config.local_tool_runtime,
                         )
                     tool = tools_by_name[tool_call["name"]]
-                    tool_result = tool.invoke(tool_call["args"])
+                    tool_result = invoke_tool(tool, tool_call["args"], tool_call["name"])
                 # 读取知识库检索工具的 Agentic 重检轨迹（未开启 agentic 时为空列表）
                 if tool_call["name"] == DATASET_RETRIEVAL_TOOL_NAME:
                     trace = list(getattr(tool, "agentic_trace", None) or [])

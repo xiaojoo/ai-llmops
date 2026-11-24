@@ -188,7 +188,7 @@ const handleSubmit = async ({ errors }: { errors: Record<string, ValidatedError>
               list-type="picture-card"
               accept="image/png, image/jpeg"
               image-preview
-              class="!w-auto mx-auto"
+              class="w-auto! mx-auto"
               v-model:file-list="form.fileList"
               :custom-request="
                 (option: RequestOption): UploadRequest => {

@@ -28,6 +28,7 @@ from internal.core.agent.entities.agent_entity import (
 )
 from internal.core.agent.entities.queue_entity import AgentThought, QueueEvent
 from internal.core.language_model.entities.model_entity import ModelFeature
+from internal.core.telemetry import traced_llm_stream
 from internal.exception import FailedException
 
 from .function_call_agent import FunctionCallAgent, _filter_xml_tool_call_stream
@@ -116,7 +117,7 @@ class ReACTAgent(FunctionCallAgent):
         in_xml_section = False
 
         try:
-            for chunk in self.llm.stream(converted_messages):
+            for chunk in traced_llm_stream(self.llm, converted_messages):
                 content = getattr(chunk, "content", "")
                 if not content:
                     continue

@@ -29,4 +29,3 @@ export const clearFocusThought = () => {
   focusState.messageId = null
   focusState.thoughtId = null
 }
-

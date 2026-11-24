@@ -39,9 +39,9 @@ const onConfirmSummary = async () => {
     <!-- 预览与调试组件（对齐 demo .preview-head：标题 + 下划线 tab + 右侧操作） -->
     <div class="ab-preview-head">
       <div class="flex items-center gap-4 min-w-0">
-        <div class="ab-preview-title flex-shrink-0">预览调试</div>
+        <div class="ab-preview-title shrink-0">预览调试</div>
         <!-- 页内 tab（与 web-apps 对话/任务详情同款：紧凑分段控件，字体 text-xs、高 28px） -->
-        <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-0.5 flex-shrink-0">
+        <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-0.5 shrink-0">
           <button
             type="button"
             class="h-7 px-3 rounded-md text-xs transition-colors"
@@ -72,7 +72,7 @@ const onConfirmSummary = async () => {
         :disabled="!props.long_term_memory?.enable"
         size="mini"
         type="text"
-        class="rounded-lg !text-blue-700 flex-shrink-0"
+        class="rounded-lg !text-blue-700 shrink-0"
         @click="openSummaryModal"
       >
         <template #icon>

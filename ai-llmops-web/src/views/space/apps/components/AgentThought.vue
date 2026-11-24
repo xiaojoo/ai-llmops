@@ -197,7 +197,7 @@ const onStepClick = (thought: AgentThought) => {
     <!-- 运行流程头部 -->
     <div
       :class="`flex items-center justify-between h-10 rounded-2xl bg-gray-100 px-4 text-gray-700 cursor-pointer w-auto ${visible ? 'rounded-bl-none rounded-br-none' : ''}`"
-      @click="visible = !visible"
+      @click="visible = visible!"
     >
       <div class="flex items-center gap-2">
         <icon-list />

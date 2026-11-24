@@ -67,7 +67,7 @@ const handleClearAccount = () => {
 <template>
   <div class="w-[520px]">
     <div class="flex items-center justify-center mb-5" style="height: 6rem; line-height: 6rem">
-      <tech-logo :size="32" class="flex-shrink-0" />
+      <tech-logo :size="32" class="shrink-0" />
       <div class="w-[520px] h-24 overflow-hidden">
         <particle-text
           text="Quantum Computing"

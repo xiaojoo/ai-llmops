@@ -22,6 +22,7 @@ from internal.core.agent.entities.queue_entity import (
     QueueEvent,
 )
 from internal.core.language_model.entities.model_entity import BaseLanguageModel
+from internal.core.telemetry import agent_span, attach_traceparent
 from internal.exception import FailedException, extract_exception_message
 
 try:
@@ -30,6 +31,7 @@ except Exception:  # pragma: no cover - openai 版本差异兜底
     _LengthFinishReasonError = ()
 
 from .agent_queue_manager import AgentQueueManager
+from internal.core.agent.run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +108,8 @@ class BaseAgent(Serializable, Runnable[AgentState, AgentResult], ABC):
     agent_config: AgentConfig
     _agent: CompiledStateGraph = PrivateAttr(None)
     _agent_queue_manager: AgentQueueManager = PrivateAttr(None)
+    _checkpointer: Any = PrivateAttr(None)
+    _run_context: RunContext | None = PrivateAttr(None)
 
     # 字段允许接受任意类型，且不需要检验器
     model_config = ConfigDict(
@@ -117,10 +121,16 @@ class BaseAgent(Serializable, Runnable[AgentState, AgentResult], ABC):
             llm: BaseLanguageModel,
             agent_config: AgentConfig,
             *args,
+            checkpointer: Any = None,
+            run_context: RunContext | None = None,
             **kwargs,
     ):
         """构造函数，初始化智能体图结构程序"""
+        self._checkpointer = checkpointer
+        self._run_context = run_context
         super().__init__(*args, llm=llm, agent_config=agent_config, **kwargs)
+        self._checkpointer = checkpointer
+        self._run_context = run_context
         self._agent = self._build_agent()
         self._agent_queue_manager = AgentQueueManager(
             user_id=self.agent_config.user_id,
@@ -220,18 +230,31 @@ class BaseAgent(Serializable, Runnable[AgentState, AgentResult], ABC):
             raise FailedException("智能体未成功构建，请核实后尝试")
 
         # 2、构建对应的任务id及数据初始化
-        input["task_id"] = input.get("task_id", uuid.uuid4())
+        input["task_id"] = input.get("task_id") or (
+            self._run_context.task_id if self._run_context is not None else uuid.uuid4()
+        )
         input["history"] = input.get("history", [])
         input["iteration_count"] = input.get("iteration_count", 0)
+        run_context = self._run_context or RunContext(
+            run_id=input["task_id"],
+            task_id=input["task_id"],
+            thread_id=str(input["task_id"]),
+        )
+        config = run_context.config(config)
 
-        # Agent 图在独立线程中执行，langgraph invoke 是同步的，
-        # 线程内不依赖 Flask app context（所有 DB 操作由 worker_run 循环内 AsyncSession 承载）。
+        # Agent 图在独立线程中执行，langgraph invoke 是同步的。
         def _invoke_agent():
             try:
-                self._agent.invoke(input)
+                traceparent = self._run_context.traceparent if self._run_context is not None else ""
+                with attach_traceparent(traceparent), agent_span(str(input["task_id"]), getattr(self, "name", "agent")):
+                    if self._checkpointer is not None and (input.get("resume") or input.get("resume_trigger")):
+                        snapshot = self._agent.get_state(config)
+                        if snapshot is not None and snapshot.next:
+                            self._agent.update_state(config, {"task_id": input["task_id"]})
+                            self._agent.invoke(None, config)
+                            return
+                    self._agent.invoke(input, config)
             except Exception as e:
-                # 图线程异常（LLM 402 余额不足/401/429/超时等）：线程内静默死亡会让监听端
-                # 空等至超时、前端一直转圈；此处发布 ERROR 事件终止监听并透出可读提示
                 logger.exception("Agent 图执行异常，task_id=%s", input.get("task_id"))
                 try:
                     self._agent_queue_manager.publish_error(input["task_id"], _format_agent_error(e))

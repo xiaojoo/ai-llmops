@@ -188,7 +188,7 @@ defineExpose({ openAdd: () => { skillsModalVisible.value = true } })
             <a-avatar
               :size="36"
               shape="square"
-              class="rounded flex-shrink-0 bg-blue-600"
+              class="rounded shrink-0 bg-blue-600"
               :image-url="skill.icon"
             >
               <icon-code v-if="!skill.icon" />
@@ -203,7 +203,7 @@ defineExpose({ openAdd: () => { skillsModalVisible.value = true } })
           <a-button aria-label="删除"
             size="mini"
             type="text"
-            class="hidden group-hover:block flex-shrink-0 ml-2 !text-red-700 rounded"
+            class="hidden group-hover:block shrink-0 ml-2 !text-red-700 rounded"
             @click="handleRemoveSkill(idx)"
           >
             <template #icon><icon-delete /></template>
@@ -253,7 +253,7 @@ defineExpose({ openAdd: () => { skillsModalVisible.value = true } })
               <a-avatar
                 :size="24"
                 shape="square"
-                class="flex-shrink-0 rounded bg-blue-600"
+                class="shrink-0 rounded bg-blue-600"
                 :image-url="skill.icon"
               >
                 <icon-code v-if="!skill.icon" />
@@ -264,7 +264,7 @@ defineExpose({ openAdd: () => { skillsModalVisible.value = true } })
               </div>
               <icon-check
                 v-if="activateSkills.some((s) => s.id === skill.id)"
-                class="text-blue-700 flex-shrink-0"
+                class="text-blue-700 shrink-0"
               />
             </div>
 
@@ -279,14 +279,14 @@ defineExpose({ openAdd: () => { skillsModalVisible.value = true } })
             <a-col
               v-if="paginator.current_page <= paginator.total_page"
               :span="24"
-              class="!text-center"
+              class="text-center!"
             >
               <a-space class="my-4">
                 <a-spin />
                 <div class="text-gray-400">加载中</div>
               </a-space>
             </a-col>
-            <a-col v-else :span="24" class="!text-center">
+            <a-col v-else :span="24" class="text-center!">
               <div class="text-gray-400 my-4">数据已加载完成</div>
             </a-col>
           </a-row>

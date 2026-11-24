@@ -216,7 +216,7 @@ const deleteSegment = async (segment_id: string) => {
           <a-card hoverable class="cursor-pointer rounded-lg">
             <div class="flex flex-wrap items-center justify-between gap-1 mb-2">
               <div class="flex items-center gap-1.5 min-w-0">
-                <a-tag size="small" class="rounded-md text-gray-500 flex-shrink-0">
+                <a-tag size="small" class="rounded-md text-gray-500 shrink-0">
                   #{{ segment.position.toString().padStart(3, '0') }}
                 </a-tag>
                 <!-- 来源定位：页码直接显示；章节标题放入 tooltip 弹出框（不占卡片） -->
@@ -224,7 +224,7 @@ const deleteSegment = async (segment_id: string) => {
                   v-if="segment.page_number"
                   :content="segment.section_title ? `第 ${segment.page_number} 页 · ${segment.section_title}` : `第 ${segment.page_number} 页`"
                 >
-                  <a-tag size="small" class="rounded-md text-gray-500 flex-shrink-0">第 {{ segment.page_number }} 页</a-tag>
+                  <a-tag size="small" class="rounded-md text-gray-500 shrink-0">第 {{ segment.page_number }} 页</a-tag>
                 </a-tooltip>
               </div>
               <div class="flex items-center flex-none">
@@ -272,7 +272,7 @@ const deleteSegment = async (segment_id: string) => {
                 <a-image
                   :src="segment.image_url"
                   :preview="true"
-                  class="!w-full !h-full object-contain img-full"
+                  class="w-full! h-full! object-contain img-full"
                   alt="图片片段"
                 />
               </div>

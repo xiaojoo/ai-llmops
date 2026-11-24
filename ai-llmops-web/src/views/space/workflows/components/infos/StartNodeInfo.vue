@@ -70,7 +70,7 @@ watch(
     <div class="flex items-center justify-between gap-3 mb-2">
       <!-- 左侧标题 -->
       <div class="flex items-center gap-1 flex-1">
-        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg flex-shrink-0">
+        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg shrink-0">
           <icon-home />
         </a-avatar>
         <a-input
@@ -83,7 +83,7 @@ watch(
       <a-button
         type="text"
         size="mini"
-        class="!text-gray-700 flex-shrink-0"
+        class="!text-gray-700 shrink-0"
         @click="() => emits('update:visible', false)"
       >
         <template #icon>
@@ -140,7 +140,7 @@ watch(
                 <a-button aria-label="关闭"
                   size="mini"
                   type="text"
-                  class="!text-gray-700 flex-shrink-0"
+                  class="!text-gray-700 shrink-0"
                   @click="removeFormField(Number(idx))"
                 >
                   <template #icon>
@@ -215,9 +215,10 @@ watch(
 </template>
 
 <style>
+@reference "../../../../../assets/styles/index.css";
 #start-node-info {
   .arco-textarea {
-    @apply !text-xs;
+    @apply text-xs!;
   }
 }
 </style>

@@ -115,7 +115,7 @@ const openFile = async (file: ChatFileItem) => {
 
 <template>
   <div class="flex gap-2 flex-row-reverse">
-    <a-avatar :size="30" shape="circle" class="flex-shrink-0" :image-url="props.account?.avatar" />
+    <a-avatar :size="30" shape="circle" class="shrink-0" :image-url="props.account?.avatar" />
     <div class="flex flex-col items-end gap-2 w-[calc(100%-38px)]">
       <div class="text-gray-700 font-bold">
         {{ props.account?.name }}
@@ -126,7 +126,7 @@ const openFile = async (file: ChatFileItem) => {
         <textarea
           ref="editRef"
           v-model="editDraft"
-          class="w-full resize-y border border-gray-200 rounded-2xl bg-white text-gray-700 px-4 py-3 outline-none focus:border-blue-400 text-sm leading-6 break-words max-h-[180px]"
+          class="w-full resize-y border border-gray-200 rounded-2xl bg-white text-gray-700 px-4 py-3 outline-none focus:border-blue-400 text-sm leading-6 wrap-break-word max-h-[180px]"
           placeholder="修改内容..."
           rows="3"
           spellcheck="false"
@@ -145,7 +145,7 @@ const openFile = async (file: ChatFileItem) => {
       <!-- 展示态：气泡 + 复制/编辑 -->
       <template v-else>
         <div
-          class="bg-blue-100 border border-blue-200 text-gray-700 px-4 py-3 rounded-2xl break-words max-w-[calc(100%-38px)]"
+          class="bg-blue-100 border border-blue-200 text-gray-700 px-4 py-3 rounded-2xl wrap-break-word max-w-[calc(100%-38px)]"
         >
           <a-image
             v-for="(image_url, idx) in props.image_urls"
@@ -161,12 +161,12 @@ const openFile = async (file: ChatFileItem) => {
               class="flex items-center gap-1.5 h-8 px-2 rounded-lg bg-white border border-blue-200 text-xs text-gray-700 hover:border-blue-400 cursor-pointer"
               @click="openFile(file)"
             >
-              <icon-file :size="14" class="flex-shrink-0" />
+              <icon-file :size="14" class="shrink-0" />
               <span class="max-w-[160px] truncate">{{ file.name }}</span>
-              <span class="text-gray-400 flex-shrink-0">{{ formatSize(file.size) }}</span>
+              <span class="text-gray-400 shrink-0">{{ formatSize(file.size) }}</span>
             </button>
           </div>
-          <div class="whitespace-pre-wrap break-words">{{ props.query }}</div>
+          <div class="whitespace-pre-wrap wrap-break-word">{{ props.query }}</div>
         </div>
         <div class="flex items-center gap-1 -mt-0.5">
           <a-tooltip content="编辑">

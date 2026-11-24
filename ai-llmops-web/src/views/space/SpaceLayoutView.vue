@@ -94,35 +94,35 @@ watch(
         <div class="flex items-center gap-2 max-md:gap-1 flex-1 min-w-0 overflow-x-auto scrollbar-w-none whitespace-nowrap">
           <router-link
             to="/space/apps"
-            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all shrink-0 whitespace-nowrap"
             active-class="bg-gray-100"
           >
             AI应用
           </router-link>
           <router-link
             to="/space/tools"
-            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all shrink-0 whitespace-nowrap"
             active-class="bg-gray-100"
           >
             API插件
           </router-link>
           <router-link
             to="/space/skills"
-            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all shrink-0 whitespace-nowrap"
             active-class="bg-gray-100"
           >
             SKILLS
           </router-link>
           <router-link
             to="/space/workflows"
-            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all shrink-0 whitespace-nowrap"
             active-class="bg-gray-100"
           >
             工作流
           </router-link>
           <router-link
             to="/space/datasets"
-            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg text-gray-700 text-sm max-md:text-[12px] px-3 max-md:px-2 h-8 leading-8 hover:bg-gray-200 transition-all shrink-0 whitespace-nowrap"
             active-class="bg-gray-100"
           >
             知识库

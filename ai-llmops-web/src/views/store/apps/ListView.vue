@@ -66,7 +66,7 @@ onMounted(() => {
         <div class="flex items-center gap-2 max-md:gap-1 flex-1 min-w-0 overflow-x-auto scrollbar-w-none whitespace-nowrap">
           <a-button
             :type="category === 'all' ? 'secondary' : 'text'"
-            class="rounded-lg !text-gray-700 text-sm max-md:!text-[12px] !px-3 max-md:!px-2 h-8 flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg !text-gray-700 text-sm max-md:!text-[12px] !px-3 max-md:!px-2 h-8 shrink-0 whitespace-nowrap"
             @click="category = 'all'"
           >
             全部
@@ -75,7 +75,7 @@ onMounted(() => {
             v-for="item in categories"
             :key="item.category"
             :type="category === item.category ? 'secondary' : 'text'"
-            class="rounded-lg !text-gray-700 text-sm max-md:!text-[12px] !px-3 max-md:!px-2 h-8 flex-shrink-0 whitespace-nowrap"
+            class="rounded-lg !text-gray-700 text-sm max-md:!text-[12px] !px-3 max-md:!px-2 h-8 shrink-0 whitespace-nowrap"
             @click="category = item.category"
           >
             {{ item.name }}

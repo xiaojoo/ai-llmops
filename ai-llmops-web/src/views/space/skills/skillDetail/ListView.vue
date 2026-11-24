@@ -184,7 +184,7 @@ onMounted(() => loadDetail())
       <!-- 主体 -->
       <div class="flex flex-1 overflow-hidden">
         <!-- 左侧文件树 -->
-        <div class="w-56 border-r border-gray-200 overflow-y-auto flex-shrink-0">
+        <div class="w-56 border-r border-gray-200 overflow-y-auto shrink-0">
           <div class="p-2">
             <file-tree-node
               :tree="fileTree"
@@ -260,7 +260,7 @@ onMounted(() => loadDetail())
                 </div>
                 <!-- 代码 -->
                 <pre
-                  class="flex-1 m-0 p-4 leading-5 whitespace-pre-wrap break-words overflow-x-auto text-gray-800"
+                  class="flex-1 m-0 p-4 leading-5 whitespace-pre-wrap wrap-break-word overflow-x-auto text-gray-800"
                   >{{ selectedFile.content?.trim() }}</pre
                 >
               </div>

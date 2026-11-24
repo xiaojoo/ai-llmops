@@ -66,7 +66,7 @@ class TestCollectSubSkills:
 class TestSkillToolContext:
     """技能工具上下文构建（skill_tool_func）"""
 
-    async def _build_tool(self):
+    async def _build_tool(self, executable: bool = False):
         """构造 Skill 对象 + 收集子技能，mock LLM 捕获 SystemMessage
 
         _create_langchain_tool_from_skill 已 async 化（await load_language_model），
@@ -74,6 +74,10 @@ class TestSkillToolContext:
         """
         _write_skill("alpha", "alpha", "技能A 的说明")
         _write_skill("beta", "beta", "技能B 的说明")
+        if executable:
+            tools_dir = CACHE / "tools"
+            tools_dir.mkdir(parents=True, exist_ok=True)
+            (tools_dir / "run.py").write_text("def run(query):\n    return query\n", encoding="utf-8")
 
         skill = MagicMock()
         skill.name = "test-pack"
@@ -138,6 +142,16 @@ class TestSkillToolContext:
         system = captured["system"]
         # 入口 alpha 的 frontmatter name 不应出现在索引行（- alpha: ...）
         assert "\n- alpha:" not in system
+
+    @pytest.mark.asyncio
+    async def test_executable_skill_disabled_by_default(self, monkeypatch):
+        monkeypatch.delenv("SKILL_EXECUTABLE_ENABLED", raising=False)
+        gateway = MagicMock()
+        monkeypatch.setattr("internal.service.app_config_service.ToolGateway.skill", gateway)
+        tool, _ = await self._build_tool(executable=True)
+        result = tool.invoke({"query": "run"})
+        assert "未启用" in result
+        gateway.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_tool_description_includes_sub_skills(self):

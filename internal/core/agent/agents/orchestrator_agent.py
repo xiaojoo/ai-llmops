@@ -40,6 +40,7 @@ from internal.core.agent.entities.agent_entity import (
 )
 from internal.core.agent.entities.queue_entity import AgentThought, QueueEvent
 from internal.core.language_model.entities.model_entity import ModelFeature, build_structured_output_llm
+from internal.core.telemetry import traced_llm_stream
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ class OrchestratorAgent(BaseAgent):
         graph.add_edge("summarize", "confirm_result")
         graph.add_conditional_edges("confirm_result", self._confirm_done_condition)
         graph.add_edge("direct_answer", END)
-        return graph.compile()
+        return graph.compile(checkpointer=self._checkpointer)
 
     @classmethod
     def _plan_condition(cls, state: AgentState) -> Literal["confirm_plan", "direct_answer", "execute"]:
@@ -837,7 +838,7 @@ class OrchestratorAgent(BaseAgent):
         try:
             self._publish_sub_task_event(state, QueueEvent.SUB_TASK_START, spec, thought=start_thought, sub_task_id=sub_task_id)
 
-            sub_agent = self._build_sub_agent(spec)
+            sub_agent = self._build_sub_agent(spec, sub_task_id, state.get("plan_id"))
             if should_resume:
                 messages = [self._message_dict_to_langchain(m) for m in (checkpoint.messages or [])]
                 input_data = {
@@ -1031,9 +1032,14 @@ class OrchestratorAgent(BaseAgent):
         except Exception:
             return HumanMessage(content=str(m))
 
-    def _build_sub_agent(self, spec: SubTaskSpec):
+    def _build_sub_agent(self, spec: SubTaskSpec, task_id: uuid.UUID | None = None, plan_id=None):
         """动态创建子 Agent（支持 tool_call 用 FunctionCallAgent，否则 ReACTAgent）"""
         cls = FunctionCallAgent if ModelFeature.TOOL_CALL in self.llm.features else ReACTAgent
+        task_id = task_id or uuid.uuid4()
+        run_context = (
+            self._run_context.child(task_id, namespace=f"{self._run_context.namespace or 'root'}:{plan_id or 'legacy'}:{spec.order}")
+            if self._run_context is not None else None
+        )
         if spec.required_tools:
             tools = [t for t in self.agent_config.tools if t.name in spec.required_tools]
         else:
@@ -1050,6 +1056,8 @@ class OrchestratorAgent(BaseAgent):
                 review_config=self.agent_config.review_config,
                 local_tool_runtime=self.agent_config.local_tool_runtime,
             ),
+            checkpointer=self._checkpointer,
+            run_context=run_context,
         )
 
     def _publish_sub_task_event(self, state: AgentState, event: QueueEvent, spec: SubTaskSpec, *, thought: str = "", observation: str = "", latency: float = 0.0, sub_task_id: uuid.UUID, total_token_count: int = 0, total_price: float = 0.0) -> None:
@@ -1072,7 +1080,7 @@ class OrchestratorAgent(BaseAgent):
         )
         stream_id = uuid.uuid4()
         gathered = None
-        for chunk in self.llm.stream([SystemMessage(content=prompt)]):
+        for chunk in traced_llm_stream(self.llm, [SystemMessage(content=prompt)]):
             if gathered is None:
                 gathered = chunk
             else:

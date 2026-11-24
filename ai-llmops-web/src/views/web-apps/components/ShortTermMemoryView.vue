@@ -31,7 +31,7 @@ const windowMessages = computed<MessageItem[]>(() =>
           短期记忆
           <span class="text-gray-400">· 对话时携带最近 {{ dialogRound }} 轮上下文</span>
         </div>
-        <span class="text-xs text-gray-400 flex-shrink-0 ml-3">窗口内 {{ windowMessages.length }} 条消息</span>
+        <span class="text-xs text-gray-400 shrink-0 ml-3">窗口内 {{ windowMessages.length }} 条消息</span>
       </div>
 
       <!-- 空态 -->

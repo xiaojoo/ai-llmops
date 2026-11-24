@@ -1452,14 +1452,14 @@ onMounted(async () => {
   <div class="flex h-screen w-full overflow-hidden">
     <!-- 左侧会话记录（视口 <992px 时折叠为图标栏） -->
     <div
-      class="w-[240px] max-lg:w-16 flex-shrink-0 border-r border-gray-200 p-4 max-lg:p-2 flex flex-col h-full overflow-hidden"
+      class="w-[240px] max-lg:w-16 shrink-0 border-r border-gray-200 p-4 max-lg:p-2 flex flex-col h-full overflow-hidden"
     >
       <!-- 顶部应用信息 -->
       <div
-        class="flex items-center gap-3 mb-8 flex-shrink-0 max-lg:justify-center max-lg:mb-4 max-lg:gap-0"
+        class="flex items-center gap-3 mb-8 shrink-0 max-lg:justify-center max-lg:mb-4 max-lg:gap-0"
       >
         <a-tooltip :content="web_app?.name || ''" position="right" :disabled="!isNarrow">
-          <a-avatar :size="32" shape="square" :image-url="web_app?.icon" class="flex-shrink-0">
+          <a-avatar :size="32" shape="square" :image-url="web_app?.icon" class="shrink-0">
           </a-avatar>
         </a-tooltip>
         <div class="flex-1 text-base font-semibold line-clamp-1 break-all text-gray-700 max-lg:hidden">
@@ -1473,7 +1473,7 @@ onMounted(async () => {
       <a-tooltip content="新增会话" position="right" :disabled="!isNarrow">
         <a-button
           type="primary"
-          class="rounded-lg mb-6 flex-shrink-0 w-full max-lg:w-10 max-lg:!px-0 max-lg:mx-auto max-lg:mb-4"
+          class="rounded-lg mb-6 shrink-0 w-full max-lg:w-10 max-lg:!px-0 max-lg:mx-auto max-lg:mb-4"
           @click="addConversation"
         >
           <template #icon>
@@ -1507,13 +1507,13 @@ onMounted(async () => {
                     : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
                 ]"
               >
-                <icon-message class="flex-shrink-0" />
+                <icon-message class="shrink-0" />
                 <div class="flex-1 line-clamp-1 break-all max-lg:hidden">{{ conversation.name }}</div>
                 <a-dropdown position="br" class="max-lg:hidden">
                   <a-button aria-label="更多操作"
                     size="mini"
                     type="text"
-                    class="!text-inherit !bg-transparent invisible group-hover:visible max-lg:!hidden"
+                    class="text-inherit! bg-transparent! invisible group-hover:visible max-lg:!hidden"
                   >
                     <template #icon>
                       <icon-more />
@@ -1562,7 +1562,7 @@ onMounted(async () => {
                 ]"
                 @click="changeConversation('new_conversation')"
               >
-                <icon-message class="flex-shrink-0" />
+                <icon-message class="shrink-0" />
                 <div class="flex-1 line-clamp-1 break-all max-lg:hidden">{{ newConversation.name }}</div>
               </div>
             </a-tooltip>
@@ -1582,13 +1582,13 @@ onMounted(async () => {
                     : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
                 ]"
               >
-                <icon-message class="flex-shrink-0" />
+                <icon-message class="shrink-0" />
                 <div class="flex-1 line-clamp-1 break-all max-lg:hidden">{{ conversation.name }}</div>
                 <a-dropdown position="br" class="max-lg:hidden">
                   <a-button aria-label="更多操作"
                     size="mini"
                     type="text"
-                    class="!text-inherit !bg-transparent invisible group-hover:visible max-lg:!hidden"
+                    class="text-inherit! bg-transparent! invisible group-hover:visible max-lg:!hidden"
                   >
                     <template #icon>
                       <icon-more />
@@ -1617,13 +1617,13 @@ onMounted(async () => {
         </div>
       </div>
       <!-- 左下角设置入口（短期记忆等会话设置） -->
-      <div class="flex-shrink-0 mt-2 pt-2 border-t border-gray-200 max-lg:flex max-lg:justify-center">
+      <div class="shrink-0 mt-2 pt-2 border-t border-gray-200 max-lg:flex max-lg:justify-center">
         <button
           type="button"
           class="flex items-center gap-2 w-full h-8 px-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer max-lg:px-0 max-lg:justify-center"
           @click="openSettings"
         >
-          <icon-settings class="flex-shrink-0" />
+          <icon-settings class="shrink-0" />
           <span class="text-sm max-lg:hidden">设置</span>
         </button>
       </div>
@@ -1632,13 +1632,13 @@ onMounted(async () => {
     <div class="flex-1 h-full bg-white flex flex-col min-w-0">
       <!-- 顶部会话名称 + 子任务摘要行/页内 tab（位于会话名称右侧；字体保持） -->
       <div
-        class="h-16 leading-[64px] text-base font-semibold px-6 border-b flex-shrink-0 flex justify-between items-center"
+        class="h-16 leading-[64px] text-base font-semibold px-6 border-b shrink-0 flex justify-between items-center"
       >
         <span class="truncate">{{ conversation?.name }}</span>
-        <div class="flex items-center gap-2 flex-shrink-0 min-w-0">
+        <div class="flex items-center gap-2 shrink-0 min-w-0">
           <!-- 子任务下拉：当前上下文存在编排子任务时显示；选中聚焦任务详情中该子任务，选中"查看全部"回全量。
                去除"子任务"文字标签，外观与右侧 tab 控件同款（灰底圆角容器 + 紧凑白底块） -->
-          <div v-if="subTaskOptions.length > 0" class="flex-shrink-0">
+          <div v-if="subTaskOptions.length > 0" class="shrink-0">
             <a-select
               :model-value="activeSubTaskId || undefined"
               :options="[{ label: '查看全部子任务', value: '__all__' }, ...subTaskOptions]"
@@ -1649,7 +1649,7 @@ onMounted(async () => {
               @change="onSubTaskSelect"
             />
           </div>
-          <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-0.5 flex-shrink-0">
+          <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-0.5 shrink-0">
             <button
               type="button"
               class="h-7 px-3 rounded-md text-xs transition-colors"
@@ -1893,7 +1893,7 @@ onMounted(async () => {
 
         <div
           :class="[
-            'z-10 bg-white flex-shrink-0',
+            'z-10 bg-white shrink-0',
             messages.length > 0 ? 'w-full  border-gray-100' : 'w-full max-w-[976px]',
           ]"
         >
@@ -1958,7 +1958,7 @@ onMounted(async () => {
               min="0"
               max="100"
               step="1"
-              class="h-8 w-24 flex-shrink-0 rounded-md border border-gray-300 px-2 text-sm text-gray-700 outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+              class="h-8 w-24 shrink-0 rounded-md border border-gray-300 px-2 text-sm text-gray-700 outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
               @input="onSettingsRoundInput"
             />
           </div>
@@ -1991,7 +1991,7 @@ onMounted(async () => {
       <!-- 内容层 pointer-events:none：指针事件始终落在 button 上，
            整个按钮区域（含边框/留白）都能拖动，而不只是图标本身 -->
       <span class="app-fab__inner">
-        <a-avatar :size="30" shape="square" :image-url="web_app?.icon" class="flex-shrink-0">
+        <a-avatar :size="30" shape="square" :image-url="web_app?.icon" class="shrink-0">
           <template #trigger-icon>
             <icon-swap />
           </template>
@@ -2020,12 +2020,12 @@ onMounted(async () => {
           :class="a.token === currentAppToken ? 'border-blue-500 bg-blue-50' : 'border-gray-200'"
           @click="switchApp(a.token)"
         >
-          <a-avatar :size="28" shape="square" :image-url="a.icon" class="flex-shrink-0" />
+          <a-avatar :size="28" shape="square" :image-url="a.icon" class="shrink-0" />
           <span class="flex-1 min-w-0">
             <span class="block truncate text-sm font-medium text-gray-800">{{ a.name || a.token }}</span>
             <span class="block truncate text-xs text-gray-400">{{ a.token }}</span>
           </span>
-          <icon-check v-if="a.token === currentAppToken" class="flex-shrink-0 text-blue-500" />
+          <icon-check v-if="a.token === currentAppToken" class="shrink-0 text-blue-500" />
         </button>
       </div>
     </div>

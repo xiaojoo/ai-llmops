@@ -11,7 +11,7 @@
 基于 browser-use + Playwright 实现，让 LangChain Agent 能用自然语言操控浏览器。
 
 进程级单例设计（修复"每次调用/每个子任务都新开一个 Chrome，任务结束浏览器还常驻"）：
-- 一个专用工作线程 + 一个事件循环 + 一个 BrowserSession（keep_alive=True 复用），
+- 一个专用工作线程 + 一个事件循环 + 一个 Browser（keep_alive=True 复用），
   同一进程内同一时刻只存在一个 Chrome，所有浏览器任务串行执行；
 - 失败/超时后进入退避窗口，窗口内直接拒绝调用，避免 LLM 反复重试重开浏览器；
 - 空闲超过 BROWSER_IDLE_TTL 后强制关闭浏览器（session.kill → watchdog 杀进程，
@@ -69,7 +69,7 @@ class _BrowserWorker:
         self._lock = threading.Lock()
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None
-        self._session = None  # browser_use.BrowserSession | None
+        self._session = None  # browser_use.Browser | None
         self._last_used = 0.0  # 最近一次成功使用时间戳（空闲回收依据）
         self._fail_until = 0.0  # 退避截止时间戳
         self._reaper: threading.Thread | None = None
@@ -135,7 +135,7 @@ class _BrowserWorker:
             return result
 
     async def _run_impl(self, task: str) -> str:
-        from browser_use import Agent, BrowserProfile, BrowserSession
+        from browser_use import Agent, Browser
         from browser_use import ChatOpenAI as BrowserChatOpenAI
 
         # 中文任务里 URL 常与后续文字粘连（"登录http://localhost:5173/home页面…"），
@@ -144,35 +144,37 @@ class _BrowserWorker:
         # 视觉识别模型：浏览器操作必须用多模态模型（browser-use 靠截图识别页面元素）。
         # 注意：DeepSeek 等纯文本模型不支持视觉，browser-use 会自动降级为 DOM 文本模式
         # （无截图、每次操作喂整页 DOM 文本）——识别准确度与速度都会大幅下降。
-        # max_completion_tokens 必须足够大：browser-use 默认 4096，qwen-vl-max 输出的
-        # action JSON 一超限就被截断（Invalid JSON: EOF while parsing），browser-use 重试
-        # 5 次后直接放弃任务（日志：Stopping due to 5 consecutive failures）。
+        # browser-use 1.0 使用 Python cell/CDP，保留足够输出预算避免长结果被截断。
         browser_llm = BrowserChatOpenAI(
             model=os.environ.get("BROWSER_LLM_MODEL", "qwen-vl-max"),  # 视觉模型（qwen-vl-max 比 qwen-vl-plus 更准）
             api_key=os.environ.get("DASHSCOPE_API_KEY", ""),
             base_url=get_settings().browser_llm_base_url,
-            max_completion_tokens=int(os.environ.get("BROWSER_MAX_TOKENS", "8192")),
         )
         if self._session is None:
-            # keep_alive=True：agent.run() 结束后不杀浏览器，同一 Chrome 被后续任务复用
-            self._session = BrowserSession(
-                browser_profile=BrowserProfile(headless=_HEADLESS, keep_alive=True)
+            allowed_domains = [
+                item.strip() for item in os.environ.get("BROWSER_ALLOWED_DOMAINS", "").split(",")
+                if item.strip()
+            ]
+            if not allowed_domains:
+                raise RuntimeError("浏览器工具未配置 BROWSER_ALLOWED_DOMAINS，已拒绝启动")
+            self._session = Browser(
+                kind="chromium",
+                local=True,
+                headless=_HEADLESS,
+                keep_alive=True,
+                allowed_domains=allowed_domains,
+                block_ip_addresses=os.environ.get("BROWSER_BLOCK_IP_ADDRESSES", "true").lower() == "true",
             )
         agent = Agent(
             task=task,
             llm=browser_llm,
             browser=self._session,
-            use_vision="auto",  # 非视觉模型（DeepSeek 等）自动降级 DOM 模式
-            # 截图清晰度：auto 让 API 按需给高清图。不要设 low——低分辨率下小图标按钮
-            # （如"清除历史"/"发送"这类 32x32 无文字图标）会模糊成一团被认错
-            vision_detail_level=os.environ.get("BROWSER_VISION_DETAIL", "auto"),
-            max_actions_per_step=int(os.environ.get("BROWSER_MAX_ACTIONS_PER_STEP", "8")),  # 每步多动作，减少 LLM 往返
-            max_clickable_elements_length=int(os.environ.get("BROWSER_MAX_CLICKABLE_ELEMENTS", "20000")),  # DOM 文本截断，DOM 模式更快
-            llm_timeout=int(os.environ.get("BROWSER_LLM_TIMEOUT", "60")),  # 单次 LLM 调用超时，防卡死拖慢
-            step_timeout=int(os.environ.get("BROWSER_STEP_TIMEOUT", "90")),  # 单步超时（须 < BROWSER_TIMEOUT 总超时）
+            judge=False,
+            max_context_chars=int(os.environ.get("BROWSER_MAX_CONTEXT_CHARS", "240000")),
+            highlight_actions=True,
         )
         try:
-            result = await asyncio.wait_for(agent.run(), timeout=_TIMEOUT)
+            result = await agent.run(timeout=_TIMEOUT)
             final = result.final_result()
             return final if final else "任务已执行完毕，但未返回具体结果。"
         except asyncio.TimeoutError:
@@ -185,9 +187,12 @@ class _BrowserWorker:
             return
         user_data_dir = None
         try:
-            user_data_dir = getattr(session.browser_profile, "user_data_dir", None)
-            fut = asyncio.run_coroutine_threadsafe(session.kill(), self._loop)
-            fut.result(timeout=10)
+            user_data_dir = getattr(session, "user_data_dir", None)
+            if self._loop is not None and self._loop.is_running():
+                fut = asyncio.run_coroutine_threadsafe(session.kill(), self._loop)
+                fut.result(timeout=10)
+            else:
+                asyncio.run(session.kill())
         except Exception:
             pass
         if user_data_dir:

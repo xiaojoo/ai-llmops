@@ -152,13 +152,18 @@ class SkillService(BaseService):
             cache_dir = self._cache_dir(skill_id)
             try:
                 cache_dir.mkdir(parents=True, exist_ok=True)
+                cache_root = cache_dir.resolve()
+                targets = []
                 for member in all_members:
                     relative = member[len(common_root):] if common_root else member
-                    if not relative:
-                        continue
-                    target = cache_dir / relative
+                    if relative:
+                        targets.append((member, self._safe_zip_target(cache_root, relative)))
+                for member, target in targets:
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(zf.read(member))
+            except ValidateException:
+                shutil.rmtree(cache_dir, ignore_errors=True)
+                raise
             except OSError as e:
                 shutil.rmtree(cache_dir, ignore_errors=True)
                 raise FailedException(f"文件解压失败: {e}")
@@ -269,14 +274,16 @@ class SkillService(BaseService):
                 common_root = ""
                 if len(top_dirs) == 1:
                     only = next(iter(top_dirs))
-                    if all(p.startswith(only + "/") for p in all_members if "/" in p):
+                    if all(p.startswith(only + "/") for p in all_members):
                         common_root = only + "/"
                 cache_dir.mkdir(parents=True, exist_ok=True)
+                cache_root = cache_dir.resolve()
+                targets = []
                 for member in all_members:
                     relative = member[len(common_root):] if common_root else member
-                    if not relative:
-                        continue
-                    target = cache_dir / relative
+                    if relative:
+                        targets.append((member, self._safe_zip_target(cache_root, relative)))
+                for member, target in targets:
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(zf.read(member))
         except Exception:
@@ -350,6 +357,18 @@ class SkillService(BaseService):
     def _cache_dir(skill_id: uuid.UUID | str) -> Path:
         """技能本地缓存目录：storage/skills/{skill_id}/"""
         return SKILL_CACHE_ROOT / str(skill_id)
+
+    @staticmethod
+    def _safe_zip_target(cache_root: Path, relative: str) -> Path:
+        relative_path = Path(relative.replace("\\", "/"))
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            raise ValidateException("技能包包含越界路径")
+        target = cache_root / relative_path
+        try:
+            target.resolve().relative_to(cache_root)
+        except ValueError as exc:
+            raise ValidateException("技能包包含越界路径") from exc
+        return target
 
     async def _get_visible_skill(self, skill_id: str, current_user: Account) -> Skill:
         """校验技能存在且对当前用户可见（归属或分享）"""

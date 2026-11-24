@@ -3,10 +3,13 @@
 """browser 工具（进程级单例 worker）行为测试：不启动真实浏览器，只验证调度/退避/回收逻辑。"""
 import asyncio
 import time
+from unittest.mock import MagicMock
 
 import pytest
 
 import importlib
+
+import browser_use
 
 # __init__.py 的 `from .browser import browser` 把子模块名覆盖成了工具函数，
 # `import ... as` 会取到被覆盖的属性，必须经 importlib 从 sys.modules 取真实模块
@@ -85,6 +88,38 @@ def test_idle_reap_closes_session(worker):
     w._last_used = time.time() - browser_mod._IDLE_TTL - 10  # 拨老时间戳模拟空闲
     w._reap_once()
     assert w._session is None  # 空闲会话已被强制关闭
+
+
+def test_browser_requires_explicit_domain_allowlist(monkeypatch):
+    monkeypatch.delenv("BROWSER_ALLOWED_DOMAINS", raising=False)
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "test")
+    monkeypatch.setattr(browser_use, "ChatOpenAI", MagicMock())
+    browser = MagicMock()
+    monkeypatch.setattr(browser_use, "Browser", browser)
+    w = browser_mod._BrowserWorker()
+    with pytest.raises(RuntimeError, match="BROWSER_ALLOWED_DOMAINS"):
+        asyncio.run(w._run_impl("open example.com"))
+    browser.assert_not_called()
+
+
+def test_drop_session_waits_for_async_browser_kill():
+    w = browser_mod._BrowserWorker()
+    w._ensure_running()
+    killed = asyncio.Event()
+
+    class Session:
+        user_data_dir = None
+
+        async def kill(self):
+            killed.set()
+
+    w._session = Session()
+    try:
+        w._drop_session()
+        assert killed.is_set()
+        assert w._session is None
+    finally:
+        w.shutdown()
 
 
 def test_retry_after_backoff_window(worker, monkeypatch):

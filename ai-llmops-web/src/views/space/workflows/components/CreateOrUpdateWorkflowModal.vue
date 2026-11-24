@@ -99,7 +99,7 @@ watch(
             :limit="1"
             list-type="picture-card"
             accept="image/png, image/jpeg"
-            class="!w-auto mx-auto"
+            class="w-auto! mx-auto"
             v-model:file-list="form.fileList"
             image-preview
             :custom-request="

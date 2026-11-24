@@ -217,7 +217,7 @@ onMounted(() => {
             class="flex items-center gap-2 h-8 mb-4"
           >
             <!-- 字段标签 -->
-            <div class="flex items-center gap-2 text-gray-500 w-[120px] flex-shrink-0">
+            <div class="flex items-center gap-2 text-gray-500 w-[120px] shrink-0">
               <div class="text-xs">{{ parameter?.label }}</div>
               <a-tooltip :content="parameter?.help">
                 <icon-question-circle />
@@ -268,7 +268,7 @@ onMounted(() => {
         <div class="text-gray-700 mb-2">输入及输出设置</div>
         <div class="flex items-center gap-2 h-8">
           <!-- 字段标签 -->
-          <div class="flex items-center gap-2 text-gray-500 w-[120px] flex-shrink-0">
+          <div class="flex items-center gap-2 text-gray-500 w-[120px] shrink-0">
             <div class="text-xs">携带上下文轮数</div>
             <a-tooltip content="每次向Agent提问时需要携带的最近消息对话轮数，默认为3。">
               <icon-question-circle />

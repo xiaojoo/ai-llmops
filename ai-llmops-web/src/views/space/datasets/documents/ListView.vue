@@ -178,7 +178,7 @@ const onDelete = (record: DocumentItem) => {
                       <icon-file />
                       <span class="line-clamp-1">{{ record.title }}</span>
                     </template>
-                    <span v-if="record.page_count" class="flex-shrink-0">{{ record.page_count }} 页</span>
+                    <span v-if="record.page_count" class="shrink-0">{{ record.page_count }} 页</span>
                   </div>
                 </a-tooltip>
               </div>

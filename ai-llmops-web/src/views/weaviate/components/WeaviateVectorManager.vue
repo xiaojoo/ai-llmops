@@ -470,7 +470,7 @@ onMounted(() => {
         <a-button
           v-if="viewMode !== 'collections'"
           size="small"
-          class="!hidden md:!inline-flex"
+          class="hidden! md:!inline-flex"
           @click="goBack"
         >
           <template #icon><icon-left /></template>返回
@@ -488,7 +488,7 @@ onMounted(() => {
         <!--        />-->
         <a-button
           size="small"
-          class="!hidden md:!inline-flex"
+          class="hidden! md:!inline-flex"
           :disabled="refreshing"
           @click="handleRefresh"
         >
@@ -553,7 +553,7 @@ onMounted(() => {
             <a-button aria-label="查看"
               size="mini"
               type="text"
-              class="flex-shrink-0 self-center"
+              class="shrink-0 self-center"
               @click="openSegmentDetail(seg)"
             >
               <template #icon><icon-eye /></template>
@@ -604,7 +604,7 @@ onMounted(() => {
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0"
+              class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
             >
               <icon-storage class="!text-blue-500 text-sm" />
             </div>
@@ -650,14 +650,14 @@ onMounted(() => {
             @click="enterDocument(doc.dataset_id, doc.document_id)"
           >
             <div
-              class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0"
+              class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0"
             >
               <icon-file class="!text-indigo-500 text-sm" />
             </div>
             <div class="min-w-0">
               <div class="text-sm font-medium text-gray-700 truncate flex items-center gap-2">
                 {{ doc.name || '未命名文档' }}
-                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-xs text-gray-500 flex-shrink-0"
+                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-xs text-gray-500 shrink-0"
                   >{{ doc.segment_count }} 分块</span
                 >
               </div>
@@ -666,7 +666,7 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-1 flex-shrink-0">
+          <div class="flex items-center gap-1 shrink-0">
             <a-tooltip content="查看分块">
               <a-button aria-label="查看"
                 size="mini"
@@ -732,7 +732,7 @@ onMounted(() => {
           class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
         >
           <div
-            class="w-6 h-6 rounded bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+            class="w-6 h-6 rounded bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"
           >
             <span class="text-xs font-mono text-gray-500">{{ seg.position ?? idx + 1 }}</span>
           </div>
@@ -759,7 +759,7 @@ onMounted(() => {
             <a-button aria-label="查看"
               size="mini"
               type="text"
-              class="flex-shrink-0 self-center"
+              class="shrink-0 self-center"
               @click="openSegmentDetail(seg)"
             >
               <template #icon><icon-eye /></template>
@@ -917,7 +917,7 @@ onMounted(() => {
           >
             <div class="flex items-center justify-between mb-1.5">
               <span class="font-mono text-blue-600 truncate">{{ r.segment_id }}</span>
-              <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+              <div class="flex items-center gap-2 shrink-0 ml-2">
                 <span class="text-gray-500"
                   >相似度 <b class="text-gray-700">{{ r.score }}</b></span
                 >
@@ -932,7 +932,7 @@ onMounted(() => {
                 <a-button
                   v-if="needRecallExpand(r.content)"
                   size="mini"
-                  class="rounded flex-shrink-0"
+                  class="rounded shrink-0"
                   @click="toggleRecallExpand(r.segment_id)"
                 >
                   <template #icon>
@@ -973,7 +973,7 @@ onMounted(() => {
     <!-- 进入文档视图的全屏加载动画 -->
     <div
       v-if="enteringDocuments"
-      class="fixed inset-0 z-[1000] flex items-center justify-center bg-white/60 backdrop-blur-[1px]"
+      class="fixed inset-0 z-1000 flex items-center justify-center bg-white/60 backdrop-blur-[1px]"
     >
       <div class="flex flex-col items-center gap-3">
         <a-spin :size="36" />
@@ -984,7 +984,7 @@ onMounted(() => {
     <!-- 进入分块视图的全屏加载动画 -->
     <div
       v-if="enteringSegments"
-      class="fixed inset-0 z-[1000] flex items-center justify-center bg-white/60 backdrop-blur-[1px]"
+      class="fixed inset-0 z-1000 flex items-center justify-center bg-white/60 backdrop-blur-[1px]"
     >
       <div class="flex flex-col items-center gap-3">
         <a-spin :size="36" />

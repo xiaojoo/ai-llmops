@@ -35,7 +35,7 @@ const masked = computed(() => {
     class="flex gap-3 py-2 border-b border-gray-100 last:border-0"
     :class="[hint ? 'items-start' : 'items-center', { 'opacity-60': disabled }]"
   >
-    <div class="w-48 flex-shrink-0">
+    <div class="w-48 shrink-0">
       <div class="text-xs font-medium text-gray-600">{{ label }}</div>
       <div class="text-xs text-gray-400 font-mono mt-0.5 truncate">
         {{ envKey }}
@@ -84,7 +84,7 @@ const masked = computed(() => {
             <span>{{ masked }}</span>
             <icon-eye
               v-if="!disabled"
-              class="!text-gray-400 hover:!text-gray-600 flex-shrink-0 ml-2"
+              class="!text-gray-400 hover:!text-gray-600 shrink-0 ml-2"
             />
           </div>
         </template>

@@ -135,7 +135,7 @@ export const useCreateOrUpdateDataset = () => {
     name: '',
     description: '',
   }
-  const form = reactive({ ...defaultForm })
+  const form = reactive<FormState>({ ...defaultForm })
   const formRef = ref<FormInstance | null>(null)
   const showUpdateModal = ref<boolean>(false)
 

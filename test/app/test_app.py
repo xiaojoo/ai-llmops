@@ -219,16 +219,14 @@ class TestCORS:
             resp = await client.options(
                 "/healthz",
                 headers={
-                    "Origin": "http://example.com",
+                    "Origin": "http://localhost:3000",
                     "Access-Control-Request-Method": "POST",
                     "Access-Control-Request-Headers": "Content-Type,Authorization",
                 },
             )
             # CORS middleware should respond with allow headers
-            # Starlette CORSMiddleware with allow_origins=["*"] + allow_credentials=True
-            # reflects the request origin (not wildcard) per CORS spec
             assert "access-control-allow-origin" in resp.headers
-            assert resp.headers.get("access-control-allow-origin") == "http://example.com"
+            assert resp.headers.get("access-control-allow-origin") == "http://localhost:3000"
 
 
 class TestDocs:

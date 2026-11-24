@@ -6,11 +6,11 @@ const props = defineProps<NodeProps>()
 
 <template>
   <div
-    class="flex flex-col gap-3 rounded-2xl p-3 bg-white border-[2px] border-transparent shadow-sm hover:shadow-md selected-border transition-all w-[360px]"
+    class="flex flex-col gap-3 rounded-2xl p-3 bg-white border-2 border-transparent shadow-sm hover:shadow-md selected-border transition-all w-[360px]"
   >
     <!-- 节点标题信息 -->
     <div class="flex items-center gap-2">
-      <a-avatar shape="square" :size="24" class="!bg-orange-500 rounded-lg flex-shrink-0">
+      <a-avatar shape="square" :size="24" class="!bg-orange-500 rounded-lg shrink-0">
         <icon-tool :size="16" />
       </a-avatar>
       <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
@@ -20,7 +20,7 @@ const props = defineProps<NodeProps>()
       <!-- 标题（分成左右两部分） -->
       <div class="w-full flex items-center gap-2 mb-2 text-gray-700 text-xs">
         <!-- 左侧变量名 -->
-        <div class="w-[180px] flex-shrink-0 flex items-center gap-2 text-gray-700">
+        <div class="w-[180px] shrink-0 flex items-center gap-2 text-gray-700">
           <icon-caret-down />
           <div class="font-semibold">输入数据</div>
         </div>
@@ -35,13 +35,13 @@ const props = defineProps<NodeProps>()
           class="w-full flex items-center text-xs gap-2"
         >
           <!-- 左侧变量信息 -->
-          <div class="w-[180px] flex-shrink-0 flex items-center gap-2">
+          <div class="w-[180px] shrink-0 flex items-center gap-2">
             <div class="flex items-center gap-1">
               <div class="text-gray-700 line-clamp-1 break-all">{{ input.name }}</div>
-              <div v-if="input.required" class="text-red-700 flex-shrink-0">*</div>
+              <div v-if="input.required" class="text-red-700 shrink-0">*</div>
             </div>
             <div
-              class="max-w-[60px] line-clamp-1 break-all text-gray-500 bg-gray-200 px-1 py-0.5 rounded flex-shrink-0"
+              class="max-w-[60px] line-clamp-1 break-all text-gray-500 bg-gray-200 px-1 py-0.5 rounded shrink-0"
             >
               {{ input.type }}
             </div>
@@ -103,6 +103,7 @@ const props = defineProps<NodeProps>()
 </template>
 
 <style scoped>
+@reference "../../../../../assets/styles/index.css";
 .selected {
   .selected-border {
     @apply border-blue-700;

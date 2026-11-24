@@ -77,6 +77,19 @@ class Settings(BaseSettings):
     minio_timeout: int = 60
     mode: str = ""  # api | celery | local（对齐旧 MODE 环境变量）
 
+    # MCP（默认关闭；stdio 等同执行外部进程，必须由管理员显式启用）
+    mcp_enabled: bool = False
+    mcp_servers_json: str = "[]"
+    mcp_allowed_account_ids: str = ""
+    mcp_timeout_s: float = 30
+    mcp_server_enabled: bool = False
+    mcp_public_url: str = ""
+
+    # OpenTelemetry（默认关闭；导出端点和凭据只从环境变量读取）
+    otel_enabled: bool = False
+    otel_service_name: str = "llmops"
+    otel_exporters: str = "console"
+
     # 语音服务（ASR 音频转写 / TTS 文字转语音）
     cos_base_url: str = "https://llmops-1253662435.cos.ap-guangzhou.myqcloud.com/"
     dashscope_base_http_api_url: str = "https://dashscope.aliyuncs.com/api/v1"

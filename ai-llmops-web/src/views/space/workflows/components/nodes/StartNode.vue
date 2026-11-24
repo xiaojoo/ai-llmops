@@ -6,11 +6,11 @@ const props = defineProps<NodeProps>()
 
 <template>
   <div
-    class="flex flex-col gap-3 rounded-3xl p-3 bg-white border-[2px] border-transparent shadow-sm hover:shadow-md selected-border transition-all w-[360px]"
+    class="flex flex-col gap-3 rounded-3xl p-3 bg-white border-2 border-transparent shadow-sm hover:shadow-md selected-border transition-all w-[360px]"
   >
     <!-- 顶部节点标题 -->
     <div class="flex items-center gap-2">
-      <a-avatar shape="square" :size="24" class="!bg-blue-700 rounded-lg flex-shrink-0">
+      <a-avatar shape="square" :size="24" class="!bg-blue-700 rounded-lg shrink-0">
         <icon-home :size="16" />
       </a-avatar>
       <div id="text-gray-700 font-semibold">{{ props.data.title }}</div>
@@ -31,7 +31,7 @@ const props = defineProps<NodeProps>()
         >
           <div class="flex items-center gap-1 max-w-[180px]">
             <div class="text-gray-700 line-clamp-1 break-all">{{ input.name }}</div>
-            <div v-if="input.required" class="flex-shrink-0 text-red-700">*</div>
+            <div v-if="input.required" class="shrink-0 text-red-700">*</div>
           </div>
           <div class="text-gray-500 bg-gray-200 px-1 py-0.5 rounded">{{ input.type }}</div>
         </div>
@@ -49,6 +49,7 @@ const props = defineProps<NodeProps>()
 </template>
 
 <style scoped>
+@reference "../../../../../assets/styles/index.css";
 .selected {
   .selected-border {
     @apply border-blue-700;

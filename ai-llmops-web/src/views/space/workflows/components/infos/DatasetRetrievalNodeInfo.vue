@@ -219,7 +219,7 @@ watch(
     <div class="flex items-center justify-between gap-3 mb-2">
       <!-- 左侧标题 -->
       <div class="flex items-center gap-1 flex-1">
-        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg flex-shrink-0">
+        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg shrink-0">
           <icon-home />
         </a-avatar>
         <a-input
@@ -232,7 +232,7 @@ watch(
       <a-button
         type="text"
         size="mini"
-        class="!text-gray-700 flex-shrink-0"
+        class="!text-gray-700 shrink-0"
         @click="() => emits('update:visible', false)"
       >
         <template #icon>
@@ -281,10 +281,10 @@ watch(
         </div>
         <!-- 参数列表 -->
         <div v-for="(input, idx) in form?.inputs" :key="idx" class="flex items-center gap-1">
-          <div class="w-[20%] flex-shrink-0">
+          <div class="w-[20%] shrink-0">
             <a-input v-model="input.name" size="mini" placeholder="参数名" class="!px-2" />
           </div>
-          <div class="w-[25%] flex-shrink-0">
+          <div class="w-[25%] shrink-0">
             <a-select
               size="mini"
               v-model="input.type"
@@ -298,7 +298,7 @@ watch(
               ]"
             />
           </div>
-          <div class="w-[47%] flex-shrink-0 flex items-center gap-1">
+          <div class="w-[47%] shrink-0 flex items-center gap-1">
             <a-input
               v-if="input.type !== 'ref'"
               size="mini"
@@ -315,7 +315,7 @@ watch(
             />
           </div>
           <!-- 删除按钮 -->
-          <div class="w-[8%] flex-shrink-0 flex justify-center">
+          <div class="w-[8%] shrink-0 flex justify-center">
             <a-button aria-label="移除" size="mini" type="text" class="!text-red-500" @click="removeInput(Number(idx))">
               <template #icon>
                 <icon-minus-circle />
@@ -430,7 +430,7 @@ watch(
               <a-avatar
                 :size="36"
                 shape="square"
-                class="rounded flex-shrink-0"
+                class="rounded shrink-0"
                 :image-url="dataset.icon"
               />
               <!-- 名称与描述信息 -->
@@ -447,7 +447,7 @@ watch(
             <a-button aria-label="删除"
               size="mini"
               type="text"
-              class="hidden group-hover:block flex-shrink-0 ml-2 !text-red-700 rounded"
+              class="hidden group-hover:block shrink-0 ml-2 !text-red-700 rounded"
               @click="removeDataset(Number(idx))"
             >
               <template #icon>
@@ -532,7 +532,7 @@ watch(
               <a-avatar
                 :size="24"
                 shape="square"
-                class="flex-shrink-0 rounded"
+                class="shrink-0 rounded"
                 :image-url="dataset.icon"
               />
               <div class="line-clamp-1 text-gray-500 flex-1">{{ dataset.name }}</div>
@@ -549,14 +549,14 @@ watch(
             <a-col
               v-if="paginator.current_page <= paginator.total_page"
               :span="24"
-              class="!text-center"
+              class="text-center!"
             >
               <a-space class="my-4">
                 <a-spin />
                 <div class="text-gray-400">加载中</div>
               </a-space>
             </a-col>
-            <a-col v-else :span="24" class="!text-center">
+            <a-col v-else :span="24" class="text-center!">
               <div class="text-gray-400 my-4">数据已加载完成</div>
             </a-col>
           </a-row>
@@ -577,9 +577,10 @@ watch(
 </template>
 
 <style>
+@reference "../../../../../assets/styles/index.css";
 #dataset_retrieval-node-info {
   .arco-textarea {
-    @apply !text-xs;
+    @apply text-xs!;
   }
 }
 </style>

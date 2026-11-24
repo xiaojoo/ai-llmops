@@ -301,10 +301,10 @@ watch(searchWord, () => {
                 v-if="skill.icon"
                 :size="40"
                 shape="square"
-                class="bg-blue-600 flex-shrink-0"
+                class="bg-blue-600 shrink-0"
                 :image-url="skill.icon"
               />
-              <a-avatar v-else :size="40" shape="square" class="bg-blue-600 flex-shrink-0">
+              <a-avatar v-else :size="40" shape="square" class="bg-blue-600 shrink-0">
                 <icon-code />
               </a-avatar>
               <div class="flex flex-col gap-0.5 min-w-0">
@@ -316,7 +316,7 @@ watch(searchWord, () => {
                   <a-tag
                     :color="skill.visibility === 'public' ? 'green' : 'gray'"
                     size="small"
-                    class="flex-shrink-0"
+                    class="shrink-0"
                   >
                     {{ skill.visibility === 'public' ? '公共' : '独占' }}
                   </a-tag>
@@ -327,7 +327,7 @@ watch(searchWord, () => {
             <a-dropdown
               v-if="skill.is_owner"
               position="br"
-              class="flex-shrink-0"
+              class="shrink-0"
               @click.stop
             >
               <a-button aria-label="更多操作" type="text" size="small" class="rounded-lg text-gray-700">
@@ -432,7 +432,7 @@ watch(searchWord, () => {
           <!-- 源码模式 -->
           <pre
             v-else
-            class="m-0 p-4 bg-gray-900 text-green-400 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap break-words font-mono"
+            class="m-0 p-4 bg-gray-900 text-green-400 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap wrap-break-word font-mono"
             >{{ skillDetail.file_content?.trim() }}</pre
           >
         </div>

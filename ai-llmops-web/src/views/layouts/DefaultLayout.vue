@@ -59,7 +59,7 @@ onMounted(async () => {
             :class="{ 'justify-center': siderCollapsed }"
           >
             <!-- 左侧：量子领域图标 -->
-            <tech-logo :size="siderCollapsed ? 24 : 40" class="flex-shrink-0" />
+            <tech-logo :size="siderCollapsed ? 24 : 40" class="shrink-0" />
             <!-- 右侧：粒子文字动画 -->
             <div v-show="!siderCollapsed" class="flex-1 min-w-0 h-10 overflow-hidden">
               <particle-text

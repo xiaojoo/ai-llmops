@@ -14,7 +14,6 @@ VS Code 插件在对话模式为 agent 时传入当前工作区路径(project_ro
   (无 shell=True,天然防注入),带超时与输出截断,stdout/stderr 合并返回。
 """
 import logging
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +34,7 @@ from internal.core.tools.builtin_tools.providers.filesystem.models.requests impo
 )
 from internal.core.tools.builtin_tools.providers.filesystem.security.policy import FileSystemPolicy
 from internal.core.tools.builtin_tools.providers.filesystem.toolkit import FileSystemToolkit
+from internal.core.tools.tool_gateway import ToolGateway
 
 logger = logging.getLogger(__name__)
 
@@ -241,41 +241,30 @@ class ShellToolkit:
             return _shell_fail("命令参数过多(超过 200 个)")
         # 白名单命令不校验参数内容——列表参数直传,不经 shell 解释,无注入面
         try:
-            proc = subprocess.run(
+            proc = ToolGateway.process(
                 [resolved_cmd, *args],
                 cwd=self.workspace,
-                capture_output=True,
-                text=True,
                 timeout=timeout,
+                max_output_bytes=SHELL_MAX_OUTPUT_BYTES,
             )
-        except subprocess.TimeoutExpired:
-            return _shell_fail(f"命令执行超时(>{timeout}s)")
         except FileNotFoundError:
             return _shell_fail(f"命令 '{command}' 不存在(未安装或不在 PATH)")
         except OSError as e:
             return _shell_fail(f"命令执行失败: {e}")
+        if proc.timed_out:
+            return _shell_fail(f"命令执行超时(>{timeout}s)")
+        if proc.cancelled:
+            return _shell_fail("命令执行已取消")
 
-        output = _merge_output(proc.stdout, proc.stderr)
-        if len(output) > SHELL_MAX_OUTPUT_BYTES:
-            output = output[:SHELL_MAX_OUTPUT_BYTES] + "\n...[输出已截断]..."
         status = "success" if proc.returncode == 0 else "failed"
         return (
             f'{{"status": "{status}", "exit_code": {proc.returncode}, '
-            f'"output": {_json_escape(output)}}}'
+            f'"output": {_json_escape(proc.output)}}}'
         )
 
 
 def _shell_fail(message: str) -> str:
     return f'{{"status": "failed", "exit_code": -1, "output": {_json_escape(message)}}}'
-
-
-def _merge_output(stdout: str, stderr: str) -> str:
-    parts = []
-    if stdout and stdout.strip():
-        parts.append(stdout.rstrip())
-    if stderr and stderr.strip():
-        parts.append(stderr.rstrip())
-    return "\n".join(parts)
 
 
 def _json_escape(text: str) -> str:

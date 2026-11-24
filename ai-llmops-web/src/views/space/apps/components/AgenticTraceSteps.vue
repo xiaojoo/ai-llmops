@@ -54,7 +54,7 @@ const isLong = (text: string) => text.length > 100
         class="flex items-start gap-2 text-xs"
       >
         <span
-          class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
+          class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
           :class="step.sufficient ? 'bg-green-500' : 'bg-amber-500'"
         >{{ step.round }}</span>
         <div class="min-w-0 flex-1">
@@ -74,7 +74,7 @@ const isLong = (text: string) => text.length > 100
             </div>
             <span
               v-if="isLong(step.query)"
-              class="flex-shrink-0 text-blue-500 cursor-pointer hover:text-blue-600"
+              class="shrink-0 text-blue-500 cursor-pointer hover:text-blue-600"
               @click="toggle(step.round)"
             >{{ isExpanded(step.round) ? '收起' : '展开' }}</span>
           </div>
@@ -89,7 +89,7 @@ const isLong = (text: string) => text.length > 100
             </div>
             <span
               v-if="isLong(step.missing)"
-              class="flex-shrink-0 text-blue-500 cursor-pointer hover:text-blue-600"
+              class="shrink-0 text-blue-500 cursor-pointer hover:text-blue-600"
               @click="toggle(step.round)"
             >{{ isExpanded(step.round) ? '收起' : '展开' }}</span>
           </div>

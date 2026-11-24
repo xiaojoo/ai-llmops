@@ -122,7 +122,7 @@ watch(
               <div class="line-clamp-1">{{ record.api_key }}</div>
               <a-button
                 size="mini"
-                class="flex-shrink-0 rounded ml-2"
+                class="shrink-0 rounded ml-2"
                 @click="async () => copyToClipboard(record.api_key)"
               >
                 <template #icon>
@@ -177,7 +177,7 @@ watch(
           title="操作"
           data-index="operator"
           header-cell-class="rounded-tr-lg !bg-gray-200 text-gray-700"
-          cell-class="bg-white !h-[40px]"
+          cell-class="bg-white h-[40px]!"
           :width="100"
           fixed="right"
         >

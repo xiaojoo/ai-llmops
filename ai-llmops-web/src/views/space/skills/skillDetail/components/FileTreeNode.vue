@@ -85,8 +85,8 @@ const sortedKeys = (tree: FileTreeNode) => {
         @click="emit('select', nodeFile(tree[name]))"
       >
         <!-- 占位符，对齐文件夹的箭头宽度 -->
-        <span class="w-3 flex-shrink-0" />
-        <icon-file class="!text-gray-400 text-sm flex-shrink-0" />
+        <span class="w-3 shrink-0" />
+        <icon-file class="!text-gray-400 text-sm shrink-0" />
         <span class="truncate">{{ name }}</span>
       </div>
     </div>

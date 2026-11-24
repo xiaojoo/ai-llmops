@@ -183,7 +183,7 @@ onMounted(() => {
         <div class="grid grid-cols-2 max-lg:grid-cols-1 gap-4">
           <div class="bg-white rounded-lg border border-gray-200 p-4">
             <!-- 标题 -->
-            <div class="flex items-center gap-2 flex-shrink-0 h-[40px]">
+            <div class="flex items-center gap-2 shrink-0 h-[40px]">
               <div class="text-gray-700 font-bold">全部会话数</div>
               <a-tooltip
                 content="反映 AI 每天的会话消息总数，在指定的时间范围内，用户对应用发起的请求总次数，一问一答"
@@ -202,7 +202,7 @@ onMounted(() => {
           </div>
           <div class="bg-white rounded-lg border border-gray-200 p-4">
             <!-- 标题 -->
-            <div class="flex items-center gap-2 mb-1 flex-shrink-0">
+            <div class="flex items-center gap-2 mb-1 shrink-0">
               <div class="text-gray-700 font-bold">活跃用户数</div>
               <a-tooltip
                 content="指定的发布渠道和时间范围内，至少完成一轮对话的总使用用户数量，用于衡量应用吸引力。"
@@ -211,7 +211,7 @@ onMounted(() => {
               </a-tooltip>
             </div>
             <!-- 副标题 -->
-            <!--            <div class="text-gray-500 mb-1 flex-shrink-0">过去7天</div>-->
+            <!--            <div class="text-gray-500 mb-1 shrink-0">过去7天</div>-->
             <div class="w-full flex-1 h-[400px]">
               <v-chart
                 v-if="trendOption?.total_messages_trend?.series"
@@ -223,7 +223,7 @@ onMounted(() => {
           </div>
           <div class="bg-white rounded-lg border border-gray-200 p-3">
             <!-- 标题 -->
-            <div class="flex items-center gap-2 mb-1 flex-shrink-0">
+            <div class="flex items-center gap-2 mb-1 shrink-0">
               <div class="text-gray-700 font-bold">平均会话互动数</div>
               <a-tooltip
                 content="反映每个会话用户的持续沟通次数，如果用户与AI进行了10轮对话，即为10，该指标反映了用户粘性度"
@@ -243,7 +243,7 @@ onMounted(() => {
           </div>
           <div class="bg-white rounded-lg border border-gray-200 p-4">
             <!-- 标题 -->
-            <div class="flex items-center gap-2 mb-1 flex-shrink-0">
+            <div class="flex items-center gap-2 mb-1 shrink-0">
               <div class="text-gray-700 font-bold">Token输出速度</div>
               <a-tooltip
                 content="衡量 LLM 的性能，统计 LLM 从请求到输出完毕这段期间内的 Tokens 输出速度。"

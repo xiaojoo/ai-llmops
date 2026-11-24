@@ -1,0 +1,22 @@
+{
+  "target": "agent",
+  "app_id": "2d68203b-8c15-4163-a03f-22374cb8b014",
+  "thresholds": {
+    "min_success_rate": 1.0,
+    "max_p95_latency_ms": 60000,
+    "max_tool_error_rate": 0.0,
+    "max_total_cost": 1.0
+  },
+  "cases": [
+    {
+      "id": "vector-db-definition",
+      "input": {
+        "query": "用一句话说明什么是向量数据库。"
+      },
+      "expect": {
+        "contains": ["向量"],
+        "regex": ".+"
+      }
+    }
+  ]
+}

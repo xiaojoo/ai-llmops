@@ -133,7 +133,7 @@ watch(
     <div class="flex items-center justify-between gap-3 mb-2">
       <!-- 左侧标题 -->
       <div class="flex items-center gap-1 flex-1">
-        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg flex-shrink-0">
+        <a-avatar :size="30" shape="square" class="!bg-blue-700 rounded-lg shrink-0">
           <icon-home />
         </a-avatar>
         <a-input
@@ -146,7 +146,7 @@ watch(
       <a-button
         type="text"
         size="mini"
-        class="!text-gray-700 flex-shrink-0"
+        class="!text-gray-700 shrink-0"
         @click="() => emits('update:visible', false)"
       >
         <template #icon>
@@ -194,13 +194,13 @@ watch(
           <div class="w-[8%]"></div>
         </div>
         <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex items-center gap-1">
-          <div class="w-[25%] flex-shrink-0">
+          <div class="w-[25%] shrink-0">
             <a-input v-model="output.name" size="mini" placeholder="请输入参数名" class="!px-2" />
           </div>
-          <div class="w-[25%] flex-shrink-0">
+          <div class="w-[25%] shrink-0">
             <a-select size="mini" v-model="output.type" class="px-2" :options="variableTypes" />
           </div>
-          <div class="w-[42%] flex-shrink-0 flex items-center gap-1">
+          <div class="w-[42%] shrink-0 flex items-center gap-1">
             <a-input
               v-if="output.type !== 'ref'"
               size="mini"
@@ -218,7 +218,7 @@ watch(
           </div>
           <div class="w-[8%] text-right">
             <icon-minus-circle
-              class="!text-gray-500 hover:!text-gray-700 cursor-pointer flex-shrink-0"
+              class="!text-gray-500 hover:!text-gray-700 cursor-pointer shrink-0"
               @click="removeFormInputField(Number(idx))"
             />
           </div>
@@ -243,9 +243,10 @@ watch(
 </template>
 
 <style>
+@reference "../../../../../assets/styles/index.css";
 #end-node-info {
   .arco-textarea {
-    @apply !text-xs;
+    @apply text-xs!;
   }
 }
 </style>

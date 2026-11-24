@@ -35,6 +35,7 @@ class AgentThought(BaseModel):
     """智能体推理观察输出内容"""
     id: UUID  # 事件对应的id，同一个事件的id是一样的
     task_id: UUID  # 任务id
+    trace_id: str = ""  # OpenTelemetry trace_id，用于串联请求、Agent、LLM 和工具
 
     # 事件的推理与观察
     event: QueueEvent

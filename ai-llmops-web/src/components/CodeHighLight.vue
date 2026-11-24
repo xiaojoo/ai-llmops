@@ -23,7 +23,7 @@ onMounted(() => {
 <template>
   <pre
     class="m-0 p-0 overflow-hidden rounded-md"
-  ><code ref="codeElement" :class="`language-${props.language} !whitespace-pre overflow-auto max-h-[700px] block p-4`"><slot></slot></code></pre>
+  ><code ref="codeElement" :class="`language-${props.language} whitespace-pre! overflow-auto max-h-[700px] block p-4`"><slot></slot></code></pre>
 </template>
 
 <style scoped>

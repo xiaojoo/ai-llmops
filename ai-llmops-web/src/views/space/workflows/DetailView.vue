@@ -446,16 +446,15 @@ watch(
     }
 // 连线随两端节点状态变色：任一端失败→红；两端成功→绿；否则灰
     // 该版本无 updateEdge(id, patch) 样式 API，通过 setEdges 重建边数组走响应式通道
-    setEdges(
-      edges.value.map((e) => {
-        const srcStatus = statusMap[e.source]
-        const tgtStatus = statusMap[e.target]
-        let stroke = '#9ca3af'
-        if (srcStatus === 'failed' || tgtStatus === 'failed') stroke = '#ef4444'
-        else if (srcStatus === 'succeeded' && tgtStatus === 'succeeded') stroke = '#22c55e'
-        return { ...e, style: { ...(e.style ?? {}), stroke, strokeWidth: 2 } }
-      }),
-    )
+    const nextEdges: Edge[] = edges.value.map((e): Edge => {
+      const srcStatus = statusMap[e.source]
+      const tgtStatus = statusMap[e.target]
+      let stroke = '#9ca3af'
+      if (srcStatus === 'failed' || tgtStatus === 'failed') stroke = '#ef4444'
+      else if (srcStatus === 'succeeded' && tgtStatus === 'succeeded') stroke = '#22c55e'
+      return { ...e, style: { ...(e.style ?? {}), stroke, strokeWidth: 2 } }
+    })
+    setEdges(nextEdges)
   },
   { deep: false },
 )
@@ -1230,7 +1229,7 @@ onUnmounted(() => {
   <div class="min-h-screen flex flex-col h-full overflow-hidden relative">
     <!-- 顶部 Header -->
     <div
-      class="h-[77px] flex-shrink-0 bg-white p-4 flex items-center justify-between relative border-b"
+      class="h-[77px] shrink-0 bg-white p-4 flex items-center justify-between relative border-b"
     >
       <div class="flex items-center gap-2">
         <router-link :to="{ name: 'space-workflows-list' }">
@@ -1315,7 +1314,7 @@ onUnmounted(() => {
       >
         <background />
         <mini-map
-          class="rounded-xl border border-gray-300 overflow-hidden !left-0 !right-auto"
+          class="rounded-xl border border-gray-300 overflow-hidden !left-0 right-auto!"
           :width="316"
           :height="190"
           pannable
@@ -1659,7 +1658,7 @@ onUnmounted(() => {
                 {{ meta.desc }}
               </div>
             </div>
-            <icon-drag-dot :size="13" class="!text-gray-300 flex-shrink-0" />
+            <icon-drag-dot :size="13" class="!text-gray-300 shrink-0" />
           </div>
         </div>
       </div>
@@ -1682,8 +1681,9 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+@reference "../../../assets/styles/index.css";
 .selected .vue-flow__edge-path {
-  @apply !stroke-blue-700;
+  @apply stroke-blue-700!;
 }
 .cursor-grab {
   cursor: grab;

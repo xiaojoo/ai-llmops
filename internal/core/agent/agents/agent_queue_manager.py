@@ -16,6 +16,7 @@ from uuid import UUID
 from redis import Redis
 
 from internal.core.agent.entities.queue_entity import AgentThought, QueueEvent
+from internal.core.telemetry import current_trace_id
 from internal.entity.conversation_entity import InvokeFrom
 import internal.extensions.redis as redis_mod
 
@@ -26,6 +27,10 @@ def _sync_redis() -> Redis | None:
     return redis_mod.sync_redis_client
 
 
+def _is_redis_client(client) -> bool:
+    return isinstance(client, Redis)
+
+
 # 断流定位用三级日志（queue-publish / queue-listen / sse-write）共同忽略的高频事件：
 # PING=10s 心跳；AGENT_MESSAGE/AGENT_THOUGHT=LLM 流式 chunk（一答可能上百条，逐条打会刷屏）。
 # 其余（LOCAL_TOOL_CALL / ASK_USER / AGENT_ACTION / AGENT_END / ERROR / STOP 等）都是
@@ -34,6 +39,12 @@ _QUIET_STREAM_EVENTS = frozenset({
     QueueEvent.PING,
     QueueEvent.AGENT_MESSAGE,
     QueueEvent.AGENT_THOUGHT,
+})
+_TERMINAL_EVENTS = frozenset({
+    QueueEvent.STOP,
+    QueueEvent.ERROR,
+    QueueEvent.TIMEOUT,
+    QueueEvent.AGENT_END,
 })
 
 logger = logging.getLogger(__name__)
@@ -64,18 +75,20 @@ class AgentQueueManager:
         # 注意：不在此快照 redis_client——base_agent 可能在 uvicorn lifespan init_redis()
         # 之前构造（模块加载期），快照会把 None 锁死。所有使用点运行时经 _sync_redis() 活引用。
 
-    def listen(self, task_id: UUID) -> Generator[str, None, None]:
-        """监听队列返回生成式数据"""
-        # 1、定义基础数据记录超时时间、开始时间、最后一次ping通时间
-        listen_timeout = 600  # 10分钟超时
+    def listen(self, task_id: UUID) -> Generator[AgentThought, None, None]:
+        """监听事件；真实 Redis 走跨 worker Stream，否则退回进程内队列。"""
+        redis_client = _sync_redis()
+        if _is_redis_client(redis_client):
+            yield from self._listen_redis(task_id, redis_client)
+            return
+
+        listen_timeout = 600
         start_time = time.time()
         last_ping_time = 0
         last_liveness_log = 0.0
         logger.info("[queue-listen] start task=%s invoke=%s", task_id, self.invoke_from)
-        # 2、创建循环队列执行死循环读取数据，直到超时或者数据读取完毕
         while True:
             try:
-                # 3、从队列中提取数据并检测数据是否存在，如果存在则使用yield返回
                 item = self.queue(task_id).get(timeout=1)
                 if item is None:
                     logger.info("[queue-listen] end task=%s elapsed=%.1fs (收到停止哨兵 None)",
@@ -88,66 +101,160 @@ class AgentQueueManager:
                             task_id, item.event.value, item.id, self.queue(task_id).qsize(),
                         )
                     yield item
-
+                    if item.event in _TERMINAL_EVENTS:
+                        break
             except queue.Empty:
-                continue
+                pass
             finally:
-                # 4、计算获取数据的总耗时
-                elapsed_time = time.time() - start_time
-                # 5、每10秒发起一个ping请求
-                if elapsed_time // 10 > last_ping_time:
+                elapsed = time.time() - start_time
+                if elapsed // 10 > last_ping_time:
                     self.publish(task_id, AgentThought(
-                        id=uuid.uuid4(),
-                        task_id=task_id,
-                        event=QueueEvent.PING,
+                        id=uuid.uuid4(), task_id=task_id, event=QueueEvent.PING,
                     ))
-                    last_ping_time = elapsed_time // 10
-                # 5.1、每 30s 记一条活性日志：ask_user 等人为等待最长 300s，
-                #      有活性日志才能区分"生成器还活着在空转"vs"生成器已死、事件堆积没人消费"
-                if elapsed_time - last_liveness_log >= 30:
-                    last_liveness_log = elapsed_time
+                    last_ping_time = elapsed // 10
+                if elapsed - last_liveness_log >= 30:
+                    last_liveness_log = elapsed
                     logger.info(
                         "[queue-listen] alive task=%s elapsed=%.0fs qsize=%d",
-                        task_id, elapsed_time, self.queue(task_id).qsize(),
+                        task_id, elapsed, self.queue(task_id).qsize(),
                     )
-                # 6、判断总耗时是否超时，如果超时则往队列中添加超时事件
-                if elapsed_time >= listen_timeout:
+                if elapsed >= listen_timeout:
                     self.publish(task_id, AgentThought(
-                        id=uuid.uuid4(),
-                        task_id=task_id,
-                        event=QueueEvent.TIMEOUT,
+                        id=uuid.uuid4(), task_id=task_id, event=QueueEvent.TIMEOUT,
                     ))
-                # 7、检测是否停止，如果已经停止则添加停止事件
                 if self._is_stopped(task_id):
                     self.publish(task_id, AgentThought(
-                        id=uuid.uuid4(),
-                        task_id=task_id,
-                        event=QueueEvent.STOP,
+                        id=uuid.uuid4(), task_id=task_id, event=QueueEvent.STOP,
                     ))
 
+    def _listen_redis(self, task_id: UUID, redis_client: Redis) -> Generator[AgentThought, None, None]:
+        listen_timeout = 600
+        start_time = time.time()
+        last_ping_time = 0
+        last_liveness_log = 0.0
+        key = self.generate_event_stream_key(task_id)
+        cursor_key = self.generate_queue_cursor_key(task_id)
+        error_key = self.generate_queue_error_key(task_id)
+        try:
+            raw_cursor = redis_client.get(cursor_key)
+            failures = 0
+        except Exception:
+            raw_cursor = None
+            failures = 1
+        last_id = raw_cursor.decode() if isinstance(raw_cursor, bytes) else (raw_cursor or "0-0")
+        logger.info("[queue-listen] redis start task=%s key=%s cursor=%s", task_id, key, last_id)
+        while True:
+            try:
+                raw_error = redis_client.get(error_key)
+            except Exception:
+                raw_error = "read_failed"
+            if raw_error:
+                yield AgentThought(
+                    id=uuid.uuid4(), task_id=task_id, event=QueueEvent.ERROR,
+                    observation="Redis 事件写入失败",
+                )
+                return
+            try:
+                response = redis_client.xread({key: last_id}, count=100, block=1000)
+                failures = 0
+            except Exception:
+                failures += 1
+                logger.warning("[queue-listen] Redis 读取失败 task=%s", task_id, exc_info=True)
+                if failures >= 3:
+                    yield AgentThought(
+                        id=uuid.uuid4(), task_id=task_id, event=QueueEvent.ERROR,
+                        observation="Redis 事件通道不可用",
+                    )
+                    return
+                response = None
+            for _key, entries in response or []:
+                for event_id, fields in entries:
+                    last_id = event_id
+                    raw = fields.get(b"thought")
+                    if not raw:
+                        continue
+                    try:
+                        item = AgentThought.model_validate_json(raw)
+                    except Exception:
+                        logger.warning("[queue-listen] 事件反序列化失败 task=%s id=%s", task_id, event_id)
+                        continue
+                    if item.event not in _QUIET_STREAM_EVENTS:
+                        logger.info("[queue-listen] redis got task=%s event=%s id=%s",
+                                    task_id, item.event.value, item.id)
+                    redis_client.set(cursor_key, event_id, ex=1800)
+                    yield item
+                    if item.event in _TERMINAL_EVENTS:
+                        return
+            elapsed = time.time() - start_time
+            if elapsed // 10 > last_ping_time:
+                self.publish(task_id, AgentThought(
+                    id=uuid.uuid4(), task_id=task_id, event=QueueEvent.PING,
+                ))
+                last_ping_time = elapsed // 10
+            if elapsed - last_liveness_log >= 30:
+                last_liveness_log = elapsed
+                logger.info("[queue-listen] redis alive task=%s elapsed=%.0fs", task_id, elapsed)
+            if elapsed >= listen_timeout:
+                self.publish(task_id, AgentThought(
+                    id=uuid.uuid4(), task_id=task_id, event=QueueEvent.TIMEOUT,
+                ))
+            if self._is_stopped(task_id):
+                self.publish(task_id, AgentThought(
+                    id=uuid.uuid4(), task_id=task_id, event=QueueEvent.STOP,
+                ))
+
     def stop_listen(self, task_id: UUID) -> None:
-        """停止监听"""
+        """停止监听。"""
+        redis_client = _sync_redis()
+        if _is_redis_client(redis_client):
+            redis_client.set(self.generate_queue_stop_key(task_id), 1, ex=1800)
+            return
         self.queue(task_id).put(None)
 
-    def forward(self, task_id: UUID, thought: AgentThought) -> None:
-        """桥接事件到目标队列：仅写入，不触发 stop_listen 语义。"""
+    def _publish(self, task_id: UUID, thought: AgentThought, *, terminal: bool) -> None:
         if not thought.model_name:
             thought = thought.model_copy(update={"model_name": self.model_name})
-        self.queue(task_id).put(thought)
-
-    def publish(self, task_id: UUID, agent_though: AgentThought) -> None:
-        """发布事件（自动补齐模型名，LangSmith 风格轨迹）"""
-        if not agent_though.model_name:
-            agent_though = agent_though.model_copy(update={"model_name": self.model_name})
+        trace_id = current_trace_id()
+        if trace_id and not thought.trace_id:
+            thought = thought.model_copy(update={"trace_id": trace_id})
         q = self.queue(task_id)
-        q.put(agent_though)
-        if agent_though.event in [QueueEvent.STOP, QueueEvent.ERROR, QueueEvent.TIMEOUT, QueueEvent.AGENT_END]:
+        redis_client = _sync_redis()
+        if _is_redis_client(redis_client):
+            try:
+                event_id = redis_client.xadd(
+                    self.generate_event_stream_key(task_id),
+                    {"thought": thought.model_dump_json()},
+                )
+                redis_client.expire(self.generate_event_stream_key(task_id), 1800)
+                if terminal:
+                    self.stop_listen(task_id)
+                if thought.event not in _QUIET_STREAM_EVENTS:
+                    logger.info("[queue-publish] redis task=%s event=%s id=%s stream_id=%s",
+                                task_id, thought.event.value, thought.id, event_id)
+                return
+            except Exception:
+                logger.warning("[queue-publish] Redis 写入失败 task=%s", task_id, exc_info=True)
+                try:
+                    redis_client.set(self.generate_queue_error_key(task_id), "publish_failed", ex=1800)
+                except Exception:
+                    pass
+                return
+        q.put(thought)
+        if terminal:
             self.stop_listen(task_id)
-        if agent_though.event not in _QUIET_STREAM_EVENTS:
+        if thought.event not in _QUIET_STREAM_EVENTS:
             logger.info(
                 "[queue-publish] task=%s event=%s id=%s qsize=%d",
-                task_id, agent_though.event.value, agent_though.id, q.qsize(),
+                task_id, thought.event.value, thought.id, q.qsize(),
             )
+
+    def forward(self, task_id: UUID, thought: AgentThought) -> None:
+        """桥接事件到目标队列：仅写入，不触发停止语义。"""
+        self._publish(task_id, thought, terminal=False)
+
+    def publish(self, task_id: UUID, agent_though: AgentThought) -> None:
+        """发布事件（自动补齐模型名，LangSmith 风格轨迹）。"""
+        self._publish(task_id, agent_though, terminal=agent_though.event in _TERMINAL_EVENTS)
 
     def publish_error(self, task_id: UUID, error) -> None:
         """发布错误信息到队列"""
@@ -226,6 +333,22 @@ class AgentQueueManager:
     @classmethod
     def generate_task_stopped_cache_key(cls, task_id: UUID) -> str:
         return f"gen_task:stopped:{task_id!s}"
+
+    @classmethod
+    def generate_event_stream_key(cls, task_id: UUID) -> str:
+        return f"gen_task:queue:{task_id!s}"
+
+    @classmethod
+    def generate_queue_stop_key(cls, task_id: UUID) -> str:
+        return f"gen_task:queue:stop:{task_id!s}"
+
+    @classmethod
+    def generate_queue_cursor_key(cls, task_id: UUID) -> str:
+        return f"gen_task:queue:cursor:{task_id!s}"
+
+    @classmethod
+    def generate_queue_error_key(cls, task_id: UUID) -> str:
+        return f"gen_task:queue:error:{task_id!s}"
 
     @classmethod
     def generate_choice_queue_key(cls, task_id: UUID) -> str:

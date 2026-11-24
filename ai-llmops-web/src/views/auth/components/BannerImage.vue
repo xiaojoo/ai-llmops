@@ -20,7 +20,7 @@ const carousels = [
 
 <template>
   <div
-    class="w-[550px] flex items-center justify-center bg-gradient-to-tr from-[#1d2129] to-[#00308f]"
+    class="w-[550px] flex items-center justify-center bg-linear-to-tr from-[#1d2129] to-[#00308f]"
   >
     <a-carousel
       :arrow="false"

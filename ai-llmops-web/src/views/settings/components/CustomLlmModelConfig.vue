@@ -67,7 +67,7 @@ const editing = computed(() => Boolean(editingId.value))
 const apiKeyDirty = ref(false)
 const formRef = ref<FormInstance | null>(null)
 
-const form = reactive<{
+interface CustomLlmForm {
   name: string
   protocol: string
   model_id: string
@@ -78,7 +78,9 @@ const form = reactive<{
   max_output_tokens: number
   remark: string
   icon: string
-}>({
+}
+
+const form = reactive<CustomLlmForm>({
   name: '',
   protocol: 'openai',
   model_id: '',
@@ -216,12 +218,12 @@ onMounted(() => {
         <!-- 卡片头：名称 + 操作 -->
         <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-200">
           <div class="flex items-center gap-2 min-w-0">
-            <a-tag v-if="model.protocol" size="small" color="arcoblue" class="flex-shrink-0">
+            <a-tag v-if="model.protocol" size="small" color="arcoblue" class="shrink-0">
               {{ protocolLabel(model.protocol) }}
             </a-tag>
             <div class="text-sm font-medium text-gray-700 truncate">{{ model.name }}</div>
           </div>
-          <a-space :size="4" class="flex-shrink-0">
+          <a-space :size="4" class="shrink-0">
             <a-button size="mini" type="text" class="!text-gray-700" @click="openEdit(model)">
               编辑
             </a-button>
@@ -246,7 +248,7 @@ onMounted(() => {
         <!-- 卡片体：label/value 行（与上方 ConfigRow 一致：w-48 label + 灰底内容） -->
         <div class="px-4 py-1">
           <div class="flex gap-3 py-2 border-b border-gray-100 last:border-0">
-            <div class="w-48 flex-shrink-0">
+            <div class="w-48 shrink-0">
               <div class="text-xs font-medium text-gray-600">模型 ID</div>
             </div>
             <div class="flex-1 min-w-0">
@@ -256,7 +258,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="flex gap-3 py-2 border-b border-gray-100 last:border-0">
-            <div class="w-48 flex-shrink-0">
+            <div class="w-48 shrink-0">
               <div class="text-xs font-medium text-gray-600">Base URL</div>
             </div>
             <div class="flex-1 min-w-0">
@@ -266,7 +268,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="flex gap-3 py-2 border-b border-gray-100 last:border-0">
-            <div class="w-48 flex-shrink-0">
+            <div class="w-48 shrink-0">
               <div class="text-xs font-medium text-gray-600">能力</div>
             </div>
             <div class="flex-1 min-w-0">
@@ -281,7 +283,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="flex gap-3 py-2 border-b border-gray-100 last:border-0">
-            <div class="w-48 flex-shrink-0">
+            <div class="w-48 shrink-0">
               <div class="text-xs font-medium text-gray-600">上下文窗口</div>
             </div>
             <div class="flex-1 min-w-0">
@@ -291,7 +293,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="flex gap-3 py-2 border-b border-gray-100 last:border-0">
-            <div class="w-48 flex-shrink-0">
+            <div class="w-48 shrink-0">
               <div class="text-xs font-medium text-gray-600">最大输出</div>
             </div>
             <div class="flex-1 min-w-0">
@@ -301,7 +303,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="flex gap-3 py-2 border-b border-gray-100 last:border-0">
-            <div class="w-48 flex-shrink-0">
+            <div class="w-48 shrink-0">
               <div class="text-xs font-medium text-gray-600">备注</div>
             </div>
             <div class="flex-1 min-w-0">

@@ -38,10 +38,10 @@ RUN pip install --no-cache-dir uv \
 
 COPY requirements.txt .
 
-# 服务器无 NVIDIA GPU：强制安装 CPU 版 PyTorch（torch==2.13.0+cpu），
+# 服务器无 NVIDIA GPU：强制安装 CPU 版 PyTorch（torch==2.15.0+cpu），
 # 避免拉取 PyPI 默认 CUDA 版 torch 自带的 nvidia-*/triton 依赖（数 GB，纯浪费）。
 # +cpu 轮子只在 download.pytorch.org/whl/cpu 上，故加为 extra-index；其余依赖仍走腾讯镜像。
-RUN printf 'torch==2.13.0+cpu\n' > /build/torch-cpu.override
+RUN printf 'torch==2.15.0+cpu\n' > /build/torch-cpu.override
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system \
@@ -60,7 +60,7 @@ RUN sed -i 's/use_auth_token/token/g' /build/deps/ltp/interface.py \
     && sed -i 's/use_auth_token/token/g' /build/deps/ltp/nerual.py
 
 # 检查依赖冲突（pip check 不支持 --path，用 PYTHONPATH 绕过）
-RUN PYTHONPATH=/build/deps pip check || true
+RUN PYTHONPATH=/build/deps pip check
 
 # ============================================================
 # Stage 2: Playwright 浏览器下载层

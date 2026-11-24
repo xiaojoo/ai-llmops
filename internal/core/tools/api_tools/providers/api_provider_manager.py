@@ -9,8 +9,9 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-import requests
 from langchain_core.tools import BaseTool, StructuredTool
+
+from internal.core.tools.tool_gateway import ToolGateway
 from pydantic import BaseModel, Field, create_model
 
 from internal.core.tools.api_tools.entities import (
@@ -52,7 +53,7 @@ class ApiProviderManager(BaseModel):
                 _parameters[parameter.get("in", ParameterIn.QUERY)][key] = value
 
             # 6、构建request请求并返回采集的内容
-            return requests.request(
+            return ToolGateway.request(
                 method=tool_entity.method,
                 url=tool_entity.url.format(**_parameters[ParameterIn.PATH]),
                 params=_parameters[ParameterIn.QUERY],

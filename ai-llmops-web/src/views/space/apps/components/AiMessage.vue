@@ -270,7 +270,7 @@ const handleMarkdownClick = (event: MouseEvent) => {
 <template>
   <div class="flex gap-2" @click="handleMarkdownClick">
     <!-- 左侧头像 -->
-    <a-avatar :size="30" shape="circle" class="flex-shrink-0" :image-url="props.app?.icon" />
+    <a-avatar :size="30" shape="circle" class="shrink-0" :image-url="props.app?.icon" />
     <!-- 右侧内容 -->
     <div class="flex flex-col items-start gap-2 flex-1" :style="{ maxWidth: props.max_width }">
       <!-- 归档消息：默认不展示原文，提供历史查询入口 -->
@@ -497,4 +497,3 @@ const handleMarkdownClick = (event: MouseEvent) => {
   background-color: #f6f8fa !important;
 }
 </style>
-

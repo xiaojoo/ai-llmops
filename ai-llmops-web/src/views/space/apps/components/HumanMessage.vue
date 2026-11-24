@@ -9,7 +9,7 @@ const props = defineProps({
   <!-- 人类消息 -->
   <div class="flex gap-2 flex-row-reverse">
     <!-- 头像 -->
-    <a-avatar :size="30" shape="circle" class="flex-shrink-0" :image-url="props.account?.avatar" />
+    <a-avatar :size="30" shape="circle" class="shrink-0" :image-url="props.account?.avatar" />
     <!-- 右侧昵称与消息 -->
     <div class="flex flex-col items-end gap-2">
       <!-- 账号昵称 -->

@@ -231,7 +231,7 @@ const columns = [
                 placeholder="请输入文本，建议使用简短的陈述句"
                 :max-length="200"
                 :auto-size="{ minRows: 6, maxRows: 6 }"
-                class="!bg-white !border-0 mb-1"
+                class="!bg-white border-0! mb-1"
               />
               <!-- 字符限制以及召回按钮 -->
               <div class="flex items-center justify-between">
@@ -270,7 +270,7 @@ const columns = [
           <!-- Agentic 命中轨迹：独立模块，不参与滚动 -->
           <div
             v-if="hitTrace.length > 0"
-            class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex-shrink-0"
+            class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg shrink-0"
           >
             <div class="flex items-center gap-2 mb-2">
               <icon-search class="!text-blue-600" />
@@ -284,7 +284,7 @@ const columns = [
                 class="flex items-start gap-2 text-xs"
               >
                 <span
-                  class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
+                  class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
                   :class="step.sufficient ? 'bg-green-500' : 'bg-amber-500'"
                 >{{ step.round }}</span>
                 <div class="min-w-0">
@@ -316,28 +316,28 @@ const columns = [
                 <!-- 顶部：得分 + 序号 + 展开按钮 -->
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                   <div class="flex items-center gap-2 min-w-0">
-                    <span class="text-gray-400 text-xs flex-shrink-0">#{{ hitTestingSegments.indexOf(segment) + 1 }}</span>
+                    <span class="text-gray-400 text-xs shrink-0">#{{ hitTestingSegments.indexOf(segment) + 1 }}</span>
                     <template v-if="hitTestingForm.retrieval_strategy === 'semantic'">
-                      <icon-pushpin class="flex-shrink-0" />
+                      <icon-pushpin class="shrink-0" />
                       <a-progress
-                        class="flex-shrink-0 w-[100px]"
+                        class="shrink-0 w-[100px]"
                         :stroke-width="6"
                         :show-text="false"
                         :percent="Math.min(segment.score * 100, 100)"
                       />
-                      <div class="text-gray-700 text-xs flex-shrink-0">
+                      <div class="text-gray-700 text-xs shrink-0">
                         {{ segment.score ? segment.score.toFixed(2) : '0.00' }}
                       </div>
                     </template>
                     <template v-else>
-                      <div class="text-gray-700 text-xs flex-shrink-0">
+                      <div class="text-gray-700 text-xs shrink-0">
                         {{ segment.score ? segment.score.toFixed(2) : '0.00' }}
                       </div>
                     </template>
                   </div>
                   <a-button
                     size="mini"
-                    class="rounded flex-shrink-0"
+                    class="rounded shrink-0"
                     @click="toggleSegmentExpand(segment)"
                   >
                     <template #icon>
@@ -365,16 +365,16 @@ const columns = [
                 </div>
                 <!-- 文档归属信息 -->
                 <div class="flex items-center gap-2 text-gray-400 text-xs mt-2 pt-2 border-t border-gray-200">
-                  <icon-file class="flex-shrink-0" />
+                  <icon-file class="shrink-0" />
                   <div class="line-clamp-1">{{ segment.document.name }}</div>
-                  <a-tag v-if="segment.content_type === 'table'" size="small" color="arcoblue" class="flex-shrink-0">表格</a-tag>
-                  <a-tag v-else-if="segment.content_type === 'image'" size="small" color="green" class="flex-shrink-0">图片</a-tag>
+                  <a-tag v-if="segment.content_type === 'table'" size="small" color="arcoblue" class="shrink-0">表格</a-tag>
+                  <a-tag v-else-if="segment.content_type === 'image'" size="small" color="green" class="shrink-0">图片</a-tag>
                   <!-- 页码直接显示；章节标题（若有）放到 tooltip 弹出框，不占卡片 -->
                   <a-tooltip
                     v-if="segment.page_number"
                     :content="segment.section_title ? `第 ${segment.page_number} 页 · ${segment.section_title}` : `第 ${segment.page_number} 页`"
                   >
-                    <a-tag size="small" class="flex-shrink-0">第 {{ segment.page_number }} 页</a-tag>
+                    <a-tag size="small" class="shrink-0">第 {{ segment.page_number }} 页</a-tag>
                   </a-tooltip>
                 </div>
               </div>

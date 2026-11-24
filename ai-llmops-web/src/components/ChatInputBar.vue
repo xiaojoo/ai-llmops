@@ -312,7 +312,7 @@ onUnmounted(() => {
           :key="image_url"
           class="w-12 h-12 relative rounded-lg overflow-hidden group cursor-pointer border border-gray-100"
         >
-          <a-avatar shape="square" :image-url="image_url" class="!w-full !h-full" />
+          <a-avatar shape="square" :image-url="image_url" class="w-full! h-full!" />
           <div
             class="hidden group-hover:flex items-center justify-center bg-gray-900/50 w-full h-full absolute top-0 left-0 transition-all"
           >
@@ -326,12 +326,12 @@ onUnmounted(() => {
           :key="file.id"
           class="flex items-center gap-1.5 h-8 px-2 rounded-lg bg-gray-100 border border-gray-200 text-xs text-gray-700"
         >
-          <icon-file :size="14" class="flex-shrink-0" />
+          <icon-file :size="14" class="shrink-0" />
           <span class="max-w-[140px] truncate">{{ file.name }}</span>
-          <span class="text-gray-400 flex-shrink-0">{{ formatSize(file.size) }}</span>
+          <span class="text-gray-400 shrink-0">{{ formatSize(file.size) }}</span>
           <icon-close
             :size="12"
-            class="!text-gray-400 hover:!text-red-500 cursor-pointer flex-shrink-0"
+            class="!text-gray-400 hover:!text-red-500 cursor-pointer shrink-0"
             @click="removeFile(idx)"
           />
         </div>
@@ -362,7 +362,7 @@ onUnmounted(() => {
           <a-button
             :loading="clearLoading"
             @click="emit('clear')"
-            class="flex-shrink-0 !text-gray-700"
+            class="shrink-0 !text-gray-700"
             type="text"
             shape="circle"
             aria-label="清空对话"
